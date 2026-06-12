@@ -681,7 +681,6 @@ public class Client extends ChannelInboundHandlerAdapter {
                     characterSlots = rs.getByte("characterslots");
                     lang = rs.getInt("language");
                     String passhash = rs.getString("password");
-                    byte tos = rs.getByte("tos");
 
                     if (banned) {
                         return 3;
@@ -693,10 +692,10 @@ public class Client extends ChannelInboundHandlerAdapter {
                     } else if (GameConfig.getServerBoolean("use_debug") && GameConfig.getServerBoolean("no_password")) {
                         return 0;
                     } else if (passhash.charAt(0) == '$' && passhash.charAt(1) == '2' && BCrypt.checkpw(pwd, passhash)) {
-                        loginok = (tos == 0) ? 23 : 0;
+                        loginok = 0;
                     } else if (pwd.equals(passhash) || checkHash(passhash, "SHA-1", pwd) || checkHash(passhash, "SHA-512", pwd)) {
                         // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
-                        loginok = (tos == 0) ? (!GameConfig.getServerBoolean("bcrypt_migration") ? 23 : -23) : (!GameConfig.getServerBoolean("bcrypt_migration") ? 0 : -10); // migrate to bcrypt
+                        loginok = !GameConfig.getServerBoolean("bcrypt_migration") ? 0 : -10; // migrate to bcrypt
                     } else {
                         loggedIn = false;
                         loginok = 4;

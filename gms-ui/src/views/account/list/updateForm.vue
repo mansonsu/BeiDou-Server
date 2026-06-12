@@ -141,7 +141,8 @@
       >
         <a-select v-model="formData.language">
           <a-option :value="2">English</a-option>
-          <a-option :value="3">中文</a-option>
+          <a-option :value="3">簡體中文 (GBK)</a-option>
+          <a-option :value="4">繁體中文 (UTF-8)</a-option>
         </a-select>
       </a-form-item>
     </a-form>

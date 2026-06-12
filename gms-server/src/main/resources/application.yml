@@ -46,8 +46,8 @@ spring:
 
 gms:
   service:
-    # zh-CN en-US
-    language: zh-CN
+    # zh-CN en-US zh-TW
+    language: zh-TW
     rate-limit:
       # 是否开启限流
       enabled: false

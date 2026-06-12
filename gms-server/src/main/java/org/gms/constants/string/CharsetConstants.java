@@ -36,11 +36,17 @@ public class CharsetConstants {
         return Language.LANGUAGE_CN == SERVICE_LANGUAGE;
     }
 
+    public static boolean isZhTW() {
+        return Language.LANGUAGE_TW == SERVICE_LANGUAGE;
+    }
+
     private static Language loadServiceLanguage() {
         ServiceProperty serviceProperty = ServerManager.getApplicationContext().getBean(ServiceProperty.class);
         String language = serviceProperty.getLanguage();
         if (language.equals("zh-CN")) {
             return Language.LANGUAGE_CN;
+        } else if (language.equals("zh-TW")) {
+            return Language.LANGUAGE_TW;
         } else {
             return Language.LANGUAGE_US;
         }
@@ -53,6 +59,7 @@ public class CharsetConstants {
     private enum Language {
         LANGUAGE_US(2, "US-ASCII", "en-US"),
         LANGUAGE_CN(3, "GBK", "zh-CN"),
+        LANGUAGE_TW(4, "UTF-8", "zh-TW"),
         LANGUAGE_PT_BR(-1, "ISO-8859-1", "en-US"),
         LANGUAGE_THAI(-1, "TIS620", "th-TH"),
         LANGUAGE_KOREAN(-1, "MS949", "ko-KR");

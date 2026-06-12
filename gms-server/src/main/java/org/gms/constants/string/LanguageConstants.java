@@ -12,6 +12,7 @@ public class LanguageConstants {
         LANG_ESP(1),
         LANG_ENG(2),
         LANG_CN(3),
+        LANG_TW(4),
         ;
 
         int lang;
@@ -26,19 +27,19 @@ public class LanguageConstants {
 
     }
 
-    public static String[] CPQBlue = new String[4];
-    public static String[] CPQError = new String[4];
-    public static String[] CPQEntry = new String[4];
-    public static String[] CPQFindError = new String[4];
-    public static String[] CPQRed = new String[4];
-    public static String[] CPQPlayerExit = new String[4];
-    public static String[] CPQEntryLobby = new String[4];
-    public static String[] CPQPickRoom = new String[4];
-    public static String[] CPQExtendTime = new String[4];
-    public static String[] CPQLeaderNotFound = new String[4];
-    public static String[] CPQChallengeRoomAnswer = new String[4];
-    public static String[] CPQChallengeRoomSent = new String[4];
-    public static String[] CPQChallengeRoomDenied = new String[4];
+    public static String[] CPQBlue = new String[5];
+    public static String[] CPQError = new String[5];
+    public static String[] CPQEntry = new String[5];
+    public static String[] CPQFindError = new String[5];
+    public static String[] CPQRed = new String[5];
+    public static String[] CPQPlayerExit = new String[5];
+    public static String[] CPQEntryLobby = new String[5];
+    public static String[] CPQPickRoom = new String[5];
+    public static String[] CPQExtendTime = new String[5];
+    public static String[] CPQLeaderNotFound = new String[5];
+    public static String[] CPQChallengeRoomAnswer = new String[5];
+    public static String[] CPQChallengeRoomSent = new String[5];
+    public static String[] CPQChallengeRoomDenied = new String[5];
 
     static {
         int lang;
@@ -88,6 +89,21 @@ public class LanguageConstants {
         LanguageConstants.CPQEntryLobby[lang] = "You will now receive challenges from other groups. If you do not accept a challenge within 3 minutes, you will be taken out.";
         LanguageConstants.CPQEntry[lang] = "You can select \"Summon Monsters\", \"Ability\", or \"Protector\" as your tactic during the Monster Carnival. Use Tab and F1 ~ F12 for quick access!";
 
+        lang = Language.LANG_TW.getValue();
+        LanguageConstants.CPQBlue[lang] = "藍隊";
+        LanguageConstants.CPQRed[lang] = "紅隊";
+        LanguageConstants.CPQPlayerExit[lang] = "離開了怪物嘉年華。";
+        LanguageConstants.CPQExtendTime[lang] = "時間已經延長。";
+        LanguageConstants.CPQLeaderNotFound[lang] = "找不到隊長。";
+        LanguageConstants.CPQError[lang] = "發生錯誤，請重新建立房間。";
+        LanguageConstants.CPQPickRoom[lang] = "已報名怪物嘉年華！\r\n";
+        LanguageConstants.CPQChallengeRoomAnswer[lang] = "該隊伍目前正在挑戰中。";
+        LanguageConstants.CPQChallengeRoomSent[lang] = "已向房間內的隊伍送出挑戰，請稍候。";
+        LanguageConstants.CPQChallengeRoomDenied[lang] = "房間內的隊伍取消了你的挑戰。";
+        LanguageConstants.CPQFindError[lang] = "找不到該房間的隊伍。\r\n可能該隊伍已經解散。";
+        LanguageConstants.CPQEntryLobby[lang] = "你現在會收到其他隊伍的挑戰。如果 3 分鐘內沒有接受挑戰，將會被送出。";
+        LanguageConstants.CPQEntry[lang] = "在怪物嘉年華期間，可以使用「召喚怪物」、「技能」或「守護物」作為戰術。使用 Tab 與 F1~F12 可快速操作。";
+
         lang = Language.LANG_CN.getValue();
         LanguageConstants.CPQBlue[lang] = "蓝队";
         LanguageConstants.CPQRed[lang] = "红队";
@@ -107,6 +123,10 @@ public class LanguageConstants {
     }
 
     public static String getMessage(Character chr, String[] message) {
-        return message[chr.getClient().getLanguage()];
+        int language = chr.getClient().getLanguage();
+        if (language < 0 || language >= message.length || message[language] == null) {
+            language = Language.LANG_ENG.getValue();
+        }
+        return message[language];
     }
 }

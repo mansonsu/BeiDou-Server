@@ -68,6 +68,13 @@ public class ServerApplication {
         String[] dbSplit = urlPrefix.split("/");
         String dbName = dbSplit[dbSplit.length - 1];
         String dbPrefix = urlPrefix.substring(0, urlPrefix.length() - dbName.length());
+
+        try (Connection ignored = getConnection(driver, dbUrl, username, password)) {
+            return;
+        } catch (Exception ignored) {
+            // If the configured database is missing, fall back to the legacy bootstrap path.
+        }
+
         try (Connection connection = getConnection(driver, dbPrefix + "mysql", username, password)) {
             PreparedStatement preparedStatement = connection.prepareStatement("SHOW DATABASES LIKE '" + dbName + "'");
             ResultSet resultSet = preparedStatement.executeQuery();

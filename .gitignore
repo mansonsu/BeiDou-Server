@@ -3,6 +3,9 @@
 !.idea/codeStyles/
 *.iml
 /target
+.m2-repo/
+build-gms-server.log
+run-gms-server*.log
 .github/*
 !.github/ISSUE_TEMPLATE/
 !.github/workflows/

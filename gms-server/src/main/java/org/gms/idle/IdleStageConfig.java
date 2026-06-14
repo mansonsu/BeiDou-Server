@@ -13,9 +13,9 @@ public final class IdleStageConfig {
 
     static {
         Map<Integer, IdleStageConfig> stages = new LinkedHashMap<>();
-        register(stages, new IdleStageConfig(20000, "弓箭手訓練場", 1, 40, 8, 8, 12, 5000, 100000000, 100100));
-        register(stages, new IdleStageConfig(20010, "森林小徑", 10, 140, 18, 22, 35, 5000, 101010000, 1110100));
-        register(stages, new IdleStageConfig(20020, "燃燒木道", 25, 380, 35, 70, 90, 5000, 101020000, 1110101));
+        register(stages, new IdleStageConfig(20000, "弓箭手訓練場", 1, 40, 8, 8, 5000, 100000000, 100100));
+        register(stages, new IdleStageConfig(20010, "森林小徑", 10, 140, 18, 22, 5000, 101010000, 1110100));
+        register(stages, new IdleStageConfig(20020, "燃燒木道", 25, 380, 35, 70, 5000, 101020000, 1110101));
         STAGES = Collections.unmodifiableMap(stages);
     }
 
@@ -25,21 +25,19 @@ public final class IdleStageConfig {
     private final int recommendedPower;
     private final int monsterLevel;
     private final int baseExpPerKill;
-    private final int baseMesoPerKill;
     private final int killIntervalMillis;
     private final int mapId;
     private final int fallbackMonsterId;
     private volatile List<Integer> monsterIds;
 
     private IdleStageConfig(int stageId, String name, int requiredLevel, int recommendedPower, int monsterLevel,
-                            int baseExpPerKill, int baseMesoPerKill, int killIntervalMillis, int mapId, int fallbackMonsterId) {
+                            int baseExpPerKill, int killIntervalMillis, int mapId, int fallbackMonsterId) {
         this.stageId = stageId;
         this.name = name;
         this.requiredLevel = requiredLevel;
         this.recommendedPower = recommendedPower;
         this.monsterLevel = monsterLevel;
         this.baseExpPerKill = baseExpPerKill;
-        this.baseMesoPerKill = baseMesoPerKill;
         this.killIntervalMillis = killIntervalMillis;
         this.mapId = mapId;
         this.fallbackMonsterId = fallbackMonsterId;
@@ -75,10 +73,6 @@ public final class IdleStageConfig {
 
     public int getBaseExpPerKill() {
         return baseExpPerKill;
-    }
-
-    public int getBaseMesoPerKill() {
-        return baseMesoPerKill;
     }
 
     public int getKillIntervalMillis() {

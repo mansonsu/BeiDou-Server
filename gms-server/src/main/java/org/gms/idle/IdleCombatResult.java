@@ -4,13 +4,11 @@ public final class IdleCombatResult {
     private final int elapsedSeconds;
     private final int kills;
     private final int exp;
-    private final int meso;
 
-    public IdleCombatResult(int elapsedSeconds, int kills, int exp, int meso) {
+    public IdleCombatResult(int elapsedSeconds, int kills, int exp) {
         this.elapsedSeconds = elapsedSeconds;
         this.kills = kills;
         this.exp = exp;
-        this.meso = meso;
     }
 
     public int getElapsedSeconds() {
@@ -23,10 +21,6 @@ public final class IdleCombatResult {
 
     public int getExp() {
         return exp;
-    }
-
-    public int getMeso() {
-        return meso;
     }
 
 }

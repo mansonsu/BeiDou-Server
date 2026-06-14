@@ -95,7 +95,6 @@ requiredLevel
 recommendedPower
 monsterLevel
 baseExpPerKill
-baseMesoPerKill
 killIntervalMillis
 mapId
 fallbackMonsterId
@@ -110,7 +109,8 @@ fallbackMonsterId
 - 掉落直接使用關卡 `mapId` 對應的 WZ 地圖怪物配置，再依抽到的 `monsterId` 讀楓之谷 `drop_data` / `MonsterInformationProvider`。
 - 同一怪物若在地圖 life 設定中有多個 spawn 點，放置模式抽怪時也會自然提高權重。
 - `fallbackMonsterId` 只在 WZ 地圖讀不到怪物時使用，避免設定錯誤直接中斷流程。
-- 放置模式第一版排除任務道具與 PQ 道具，避免污染任務流程；PQ 是 Party Quest 組隊任務專用道具。楓幣則沿用 idle meso 計算，不直接吃怪物 `itemId = 0` 的掉落。
+- 放置模式第一版排除任務道具與 PQ 道具，避免污染任務流程；PQ 是 Party Quest 組隊任務專用道具。
+- 楓幣使用怪物掉落表中的 `itemId = 0`，成功擲中後套用角色楓幣倍率與 `MESOUP` buff，再累積到 `pendingMeso`。
 
 ## Unity 第一版 UI 建議
 

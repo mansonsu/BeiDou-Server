@@ -1,11 +1,13 @@
 package org.gms.idle;
 
+import org.gms.client.BuffStat;
 import org.gms.client.Character;
 import org.gms.client.inventory.manipulator.InventoryManipulator;
 import org.gms.constants.inventory.ItemConstants;
 import org.gms.server.ItemInformationProvider;
 import org.gms.server.life.MonsterDropEntry;
 import org.gms.server.life.MonsterInformationProvider;
+import org.gms.util.NumberTool;
 import org.gms.util.Randomizer;
 
 import java.util.ArrayList;
@@ -38,7 +40,6 @@ public final class IdleCombatSession {
             lastTickMillis = nowMillis;
             totalKills = safeAdd(totalKills, result.getKills());
             pendingExp = safeAdd(pendingExp, result.getExp());
-            pendingMeso = safeAdd(pendingMeso, result.getMeso());
             rollMonsterDrops(chr, result.getKills());
         }
         return snapshot(result.getElapsedSeconds(), calculator.calculatePower(chr));
@@ -106,6 +107,10 @@ public final class IdleCombatSession {
             int monsterId = monsterIds.get(Randomizer.nextInt(monsterIds.size()));
             List<MonsterDropEntry> drops = monsterInfo.retrieveEffectiveDrop(monsterId);
             for (MonsterDropEntry drop : drops) {
+                if (drop.itemId == 0) {
+                    rollMesoDrop(chr, drop, dropRate);
+                    continue;
+                }
                 if (!isIdleEligibleDrop(itemInfo, drop)) {
                     continue;
                 }
@@ -113,11 +118,41 @@ public final class IdleCombatSession {
                 float cardRate = chr.getCardRate(drop.itemId);
                 int dropChance = (int) Math.min((float) drop.chance * dropRate * cardRate, Integer.MAX_VALUE);
                 if (Randomizer.nextInt(999999) < dropChance) {
-                    int quantity = drop.Maximum > drop.Minimum ? Randomizer.rand(drop.Minimum, drop.Maximum) : Math.max(1, drop.Minimum);
+                    int quantity = rollDropAmount(drop);
                     addPendingReward(drop.itemId, quantity);
                 }
             }
         }
+    }
+
+    private void rollMesoDrop(Character chr, MonsterDropEntry drop, float dropRate) {
+        if (drop.questid > 0) {
+            return;
+        }
+
+        float cardRate = chr.getCardRate(drop.itemId);
+        int dropChance = (int) Math.min((float) drop.chance * dropRate * cardRate, Integer.MAX_VALUE);
+        if (Randomizer.nextInt(999999) >= dropChance) {
+            return;
+        }
+
+        int mesos = rollDropAmount(drop);
+        if (mesos <= 0) {
+            return;
+        }
+
+        if (chr.getBuffedValue(BuffStat.MESOUP) != null) {
+            mesos = NumberTool.doubleToInt(mesos * chr.getBuffedValue(BuffStat.MESOUP).doubleValue() / 100.0D);
+        }
+        mesos = NumberTool.floatToInt(mesos * chr.getMesoRate());
+        if (mesos <= 0) {
+            mesos = Integer.MAX_VALUE;
+        }
+        pendingMeso = safeAdd(pendingMeso, mesos);
+    }
+
+    private int rollDropAmount(MonsterDropEntry drop) {
+        return drop.Maximum > drop.Minimum ? Randomizer.rand(drop.Minimum, drop.Maximum) : Math.max(1, drop.Minimum);
     }
 
     private boolean isIdleEligibleDrop(ItemInformationProvider itemInfo, MonsterDropEntry drop) {

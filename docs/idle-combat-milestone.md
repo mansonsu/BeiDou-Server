@@ -249,7 +249,8 @@
 
 - 任務道具與 PQ 道具先排除，避免放置模式影響任務流程。
 - PQ 是 Party Quest 組隊任務專用道具，通常只應該存在於組隊任務流程。
-- 怪物掉落中的楓幣掉落 `itemId = 0` 先不使用，楓幣仍由 idle meso 計算。
+- 怪物掉落中的楓幣掉落 `itemId = 0` 已納入放置結算，成功擲中後會累積到 `pendingMeso`。
+- `pendingMeso` 只是尚未領取的楓幣暫存值，不代表另有一套放置專用楓幣表。
 - 裝備掉落會依照數量拆成一件一件發放，避免 `InventoryManipulator.addById(...)` 的裝備數量限制。
 - 同一怪物如果在地圖 WZ life 設定有多個 spawn 點，抽怪時會保留這個權重。
 - 若 `mapId` 讀不到任何怪物，才會退回使用 `fallbackMonsterId`。
@@ -270,3 +271,13 @@
 - 每次放置擊殺會從該地圖怪物清單抽一隻怪，再用該怪既有掉落表擲掉落。
 - 封包改回傳 `mapId` 與 `monsterIds` 清單。
 - Unity Debug Panel 改顯示地圖 ID 與怪物 ID 清單。
+
+## 2026-06-15：放置楓幣改用怪物原始掉落
+
+### 已完成
+
+- 移除 Idle 關卡設定中的 `baseMesoPerKill`。
+- `IdleCombatCalculator` 不再產生楓幣，避免與怪物掉落表重複。
+- `IdleCombatSession` 將 `drop_data` 內 `itemId = 0` 視為楓幣掉落。
+- 楓幣掉落會套用角色 `getMesoRate()` 與 `MESOUP` buff。
+- 領取時仍透過 `pendingMeso` 一次發給角色。

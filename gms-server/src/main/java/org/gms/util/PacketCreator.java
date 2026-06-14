@@ -983,14 +983,6 @@ public class PacketCreator {
         return updatePlayerStats(EMPTY_STATUPDATE, true, null);
     }
 
-    public static Packet idleInitResult(boolean success, int mapId, String message) {
-        OutPacket p = OutPacket.create(SendOpcode.IDLE_INIT_RESULT);
-        p.writeBool(success);
-        p.writeInt(mapId);
-        p.writeString(message == null ? "" : message);
-        return p;
-    }
-
     /**
      * Gets an update for specified stats.
      *

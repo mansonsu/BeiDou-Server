@@ -64,10 +64,11 @@ int elapsedSeconds
 int totalKills
 int pendingExp
 int pendingMeso
-int pendingCommonDrops
-int pendingRareDrops
-int commonRewardItemId
-int rareRewardItemId
+int monsterId
+int rewardCount
+repeat rewardCount:
+  int itemId
+  int quantity
 int playerPower
 int recommendedPower
 string message
@@ -93,10 +94,7 @@ monsterLevel
 baseExpPerKill
 baseMesoPerKill
 killIntervalMillis
-commonDropChancePerTenThousand
-rareDropChancePerTenThousand
-commonRewardItemId
-rareRewardItemId
+monsterId
 ```
 
 ## 後端負載原則
@@ -105,7 +103,8 @@ rareRewardItemId
 - 每次玩家查詢、領取、離開時，根據 `lastTickMillis` 計算經過時間。
 - 每個 session 最小 tick 單位可設為 5 秒或 10 秒。
 - 每次結算只更新 session 記憶體；只有 claim 才寫角色 EXP / 楓幣 / 道具。
-- 掉落第一版用關卡設定的普通與稀有 itemId，之後再接真實怪物掉落表。
+- 掉落直接使用關卡 `monsterId` 對應的楓之谷 `drop_data` / `MonsterInformationProvider`。
+- 放置模式第一版排除任務道具與 PQ 道具，避免污染任務流程；楓幣則沿用 idle meso 計算，不直接吃怪物 `itemId = 0` 的掉落。
 
 ## Unity 第一版 UI 建議
 

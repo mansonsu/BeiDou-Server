@@ -58,6 +58,7 @@ import org.gms.constants.id.MapId;
 import org.gms.constants.id.NpcId;
 import org.gms.constants.inventory.ItemConstants;
 import org.gms.idle.IdleCombatSnapshot;
+import org.gms.idle.IdleRewardItem;
 import org.gms.constants.skills.Buccaneer;
 import org.gms.constants.skills.Corsair;
 import org.gms.constants.skills.ThunderBreaker;
@@ -7541,10 +7542,12 @@ public class PacketCreator {
         p.writeInt(snapshot.getTotalKills());
         p.writeInt(snapshot.getPendingExp());
         p.writeInt(snapshot.getPendingMeso());
-        p.writeInt(snapshot.getPendingCommonDrops());
-        p.writeInt(snapshot.getPendingRareDrops());
-        p.writeInt(snapshot.getCommonRewardItemId());
-        p.writeInt(snapshot.getRareRewardItemId());
+        p.writeInt(snapshot.getMonsterId());
+        p.writeInt(snapshot.getPendingRewards().size());
+        for (IdleRewardItem reward : snapshot.getPendingRewards()) {
+            p.writeInt(reward.getItemId());
+            p.writeInt(reward.getQuantity());
+        }
         p.writeInt(snapshot.getPlayerPower());
         p.writeInt(snapshot.getRecommendedPower());
         p.writeString(message + "：" + snapshot.getStageName());

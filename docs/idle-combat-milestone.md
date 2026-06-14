@@ -163,7 +163,9 @@
 - 若封包流程穩定，下一步開始做正式 Idle 主畫面。
 - 正式 UI 前，建議先補後端掉落物發放設計，避免 UI 先做死欄位。
 
-## 2026-06-15：放置掉落物發放第一版已完成
+## 2026-06-15：放置掉落物發放第一版已完成（已廢棄）
+
+> 這一版曾暫時使用手動指定的普通/稀有 itemId，例如 `4000000`、`4010000`。這只是過渡實作，後續已改成直接套用楓之谷怪物掉落表，不應再沿用這個設計。
 
 ### 後端已完成
 
@@ -202,6 +204,8 @@
 
 ## 2026-06-15：Idle Result 回傳獎勵 itemId 已完成
 
+> 這一版仍是普通/稀有兩欄封包，後續已改成 reward list。
+
 ### 已完成
 
 - 後端 `IdleCombatSnapshot` 新增：
@@ -222,3 +226,31 @@
   - `rewardCount`
   - 多筆 `itemId / quantity / rarity`
 - 然後 Unity 可以用同一份資料渲染掉落列表，不需要硬寫普通與稀有兩欄。
+
+## 2026-06-15：改用楓之谷怪物掉落表
+
+### 已完成
+
+- 移除手動指定的普通/稀有獎勵 itemId 設計。
+- `IdleStageConfig` 改成每個放置關卡指定一個 `monsterId`。
+- `IdleCombatSession` 依擊殺數讀取 `MonsterInformationProvider.retrieveEffectiveDrop(monsterId)`，直接使用既有 `drop_data`。
+- 放置掉落累積改成 `itemId -> quantity`。
+- `IDLE_STAGE_RESULT` 改成 reward list：
+  - `int monsterId`
+  - `int rewardCount`
+  - 多筆 `int itemId`
+  - 多筆 `int quantity`
+- Unity `IdleStageState` 改成 `PendingRewards` 清單。
+- Unity Debug Panel 改成顯示多筆待領道具。
+
+### 目前規則
+
+- 任務道具與 PQ 道具先排除，避免放置模式影響任務流程。
+- 怪物掉落中的楓幣掉落 `itemId = 0` 先不使用，楓幣仍由 idle meso 計算。
+- 裝備掉落會依照數量拆成一件一件發放，避免 `InventoryManipulator.addById(...)` 的裝備數量限制。
+
+### 下一個 milestone
+
+- 實機測試 `Enter 20000 -> State -> Claim`，確認背包真的收到該 `monsterId` 的掉落物。
+- 補 item name 顯示：Unity 可用本地 WZ item string，或後端封包額外回傳名稱。
+- 之後把 `IdleStageConfig` 從 Java 常數搬到資料表或設定檔，欄位只需要關卡資料與 `monsterId`，不需要重建掉落表。

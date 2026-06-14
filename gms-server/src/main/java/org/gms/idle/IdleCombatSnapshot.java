@@ -1,5 +1,9 @@
 package org.gms.idle;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public final class IdleCombatSnapshot {
     private final int characterId;
     private final int stageId;
@@ -8,16 +12,14 @@ public final class IdleCombatSnapshot {
     private final int totalKills;
     private final int pendingExp;
     private final int pendingMeso;
-    private final int pendingCommonDrops;
-    private final int pendingRareDrops;
-    private final int commonRewardItemId;
-    private final int rareRewardItemId;
+    private final int monsterId;
+    private final List<IdleRewardItem> pendingRewards;
     private final int playerPower;
     private final int recommendedPower;
 
     public IdleCombatSnapshot(int characterId, int stageId, String stageName, int elapsedSeconds, int totalKills,
-                              int pendingExp, int pendingMeso, int pendingCommonDrops, int pendingRareDrops,
-                              int commonRewardItemId, int rareRewardItemId, int playerPower, int recommendedPower) {
+                              int pendingExp, int pendingMeso, int monsterId, List<IdleRewardItem> pendingRewards,
+                              int playerPower, int recommendedPower) {
         this.characterId = characterId;
         this.stageId = stageId;
         this.stageName = stageName;
@@ -25,10 +27,8 @@ public final class IdleCombatSnapshot {
         this.totalKills = totalKills;
         this.pendingExp = pendingExp;
         this.pendingMeso = pendingMeso;
-        this.pendingCommonDrops = pendingCommonDrops;
-        this.pendingRareDrops = pendingRareDrops;
-        this.commonRewardItemId = commonRewardItemId;
-        this.rareRewardItemId = rareRewardItemId;
+        this.monsterId = monsterId;
+        this.pendingRewards = Collections.unmodifiableList(new ArrayList<>(pendingRewards));
         this.playerPower = playerPower;
         this.recommendedPower = recommendedPower;
     }
@@ -61,20 +61,12 @@ public final class IdleCombatSnapshot {
         return pendingMeso;
     }
 
-    public int getPendingCommonDrops() {
-        return pendingCommonDrops;
+    public int getMonsterId() {
+        return monsterId;
     }
 
-    public int getPendingRareDrops() {
-        return pendingRareDrops;
-    }
-
-    public int getCommonRewardItemId() {
-        return commonRewardItemId;
-    }
-
-    public int getRareRewardItemId() {
-        return rareRewardItemId;
+    public List<IdleRewardItem> getPendingRewards() {
+        return pendingRewards;
     }
 
     public int getPlayerPower() {

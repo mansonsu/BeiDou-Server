@@ -2,10 +2,17 @@ package org.gms.idle;
 
 import org.gms.client.Character;
 import org.gms.client.inventory.manipulator.InventoryManipulator;
+import org.gms.constants.inventory.ItemConstants;
+import org.gms.server.ItemInformationProvider;
+import org.gms.server.life.MonsterDropEntry;
+import org.gms.server.life.MonsterInformationProvider;
+import org.gms.util.Randomizer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class IdleCombatSession {
     private static final String REWARD_OWNER = "";
@@ -16,8 +23,7 @@ public final class IdleCombatSession {
     private int totalKills;
     private int pendingExp;
     private int pendingMeso;
-    private int pendingCommonDrops;
-    private int pendingRareDrops;
+    private final Map<Integer, Integer> pendingRewards = new LinkedHashMap<>();
 
     public IdleCombatSession(int characterId, IdleStageConfig stage, long nowMillis) {
         this.characterId = characterId;
@@ -33,8 +39,7 @@ public final class IdleCombatSession {
             totalKills = safeAdd(totalKills, result.getKills());
             pendingExp = safeAdd(pendingExp, result.getExp());
             pendingMeso = safeAdd(pendingMeso, result.getMeso());
-            pendingCommonDrops = safeAdd(pendingCommonDrops, result.getCommonDrops());
-            pendingRareDrops = safeAdd(pendingRareDrops, result.getRareDrops());
+            rollMonsterDrops(chr, result.getKills());
         }
         return snapshot(result.getElapsedSeconds(), calculator.calculatePower(chr));
     }
@@ -43,21 +48,18 @@ public final class IdleCombatSession {
         tick(chr, calculator, nowMillis);
         int claimedExp = pendingExp;
         int claimedMeso = pendingMeso;
-        int claimedCommonDrops = pendingCommonDrops;
-        int claimedRareDrops = pendingRareDrops;
-        validateRewardSpace(chr, claimedCommonDrops, claimedRareDrops);
+        Map<Integer, Integer> claimedRewards = new LinkedHashMap<>(pendingRewards);
+        validateRewardSpace(chr, claimedRewards);
         if (claimedExp > 0) {
             chr.gainExp(claimedExp, true, true);
         }
         if (claimedMeso > 0) {
             chr.gainMeso(claimedMeso, true, true, false);
         }
-        grantItem(chr, stage.getCommonRewardItemId(), claimedCommonDrops);
-        grantItem(chr, stage.getRareRewardItemId(), claimedRareDrops);
+        grantItems(chr, claimedRewards);
         pendingExp = 0;
         pendingMeso = 0;
-        pendingCommonDrops = 0;
-        pendingRareDrops = 0;
+        pendingRewards.clear();
         return snapshot(0, calculator.calculatePower(chr));
     }
 
@@ -67,8 +69,7 @@ public final class IdleCombatSession {
         this.totalKills = 0;
         this.pendingExp = 0;
         this.pendingMeso = 0;
-        this.pendingCommonDrops = 0;
-        this.pendingRareDrops = 0;
+        this.pendingRewards.clear();
     }
 
     private IdleCombatSnapshot snapshot(int elapsedSeconds, int playerPower) {
@@ -80,10 +81,8 @@ public final class IdleCombatSession {
                 totalKills,
                 pendingExp,
                 pendingMeso,
-                pendingCommonDrops,
-                pendingRareDrops,
-                stage.getCommonRewardItemId(),
-                stage.getRareRewardItemId(),
+                stage.getMonsterId(),
+                snapshotRewards(),
                 playerPower,
                 stage.getRecommendedPower()
         );
@@ -93,11 +92,58 @@ public final class IdleCombatSession {
         return (int) Math.min(Integer.MAX_VALUE, (long) left + right);
     }
 
-    private void validateRewardSpace(Character chr, int commonDrops, int rareDrops) {
+    private void rollMonsterDrops(Character chr, int kills) {
+        List<MonsterDropEntry> drops = MonsterInformationProvider.getInstance().retrieveEffectiveDrop(stage.getMonsterId());
+        if (drops.isEmpty()) {
+            return;
+        }
+
+        ItemInformationProvider itemInfo = ItemInformationProvider.getInstance();
+        float dropRate = chr.getDropRate();
+        for (int i = 0; i < kills; i++) {
+            for (MonsterDropEntry drop : drops) {
+                if (!isIdleEligibleDrop(itemInfo, drop)) {
+                    continue;
+                }
+
+                float cardRate = chr.getCardRate(drop.itemId);
+                int dropChance = (int) Math.min((float) drop.chance * dropRate * cardRate, Integer.MAX_VALUE);
+                if (Randomizer.nextInt(999999) < dropChance) {
+                    int quantity = drop.Maximum > drop.Minimum ? Randomizer.rand(drop.Minimum, drop.Maximum) : Math.max(1, drop.Minimum);
+                    addPendingReward(drop.itemId, quantity);
+                }
+            }
+        }
+    }
+
+    private boolean isIdleEligibleDrop(ItemInformationProvider itemInfo, MonsterDropEntry drop) {
+        return drop.itemId > 0
+                && drop.questid <= 0
+                && !itemInfo.isQuestItem(drop.itemId)
+                && !itemInfo.isPartyQuestItem(drop.itemId);
+    }
+
+    private void addPendingReward(int itemId, int quantity) {
+        if (itemId <= 0 || quantity <= 0) {
+            return;
+        }
+        pendingRewards.merge(itemId, quantity, this::safeAdd);
+    }
+
+    private List<IdleRewardItem> snapshotRewards() {
+        List<IdleRewardItem> rewards = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> reward : pendingRewards.entrySet()) {
+            rewards.add(new IdleRewardItem(reward.getKey(), reward.getValue()));
+        }
+        return rewards;
+    }
+
+    private void validateRewardSpace(Character chr, Map<Integer, Integer> rewards) {
         List<Integer> itemIds = new ArrayList<>();
         List<Integer> quantities = new ArrayList<>();
-        addRewardCheck(itemIds, quantities, stage.getCommonRewardItemId(), commonDrops);
-        addRewardCheck(itemIds, quantities, stage.getRareRewardItemId(), rareDrops);
+        for (Map.Entry<Integer, Integer> reward : rewards.entrySet()) {
+            addRewardCheck(itemIds, quantities, reward.getKey(), reward.getValue());
+        }
         if (!chr.getAbstractPlayerInteraction().canHoldAllAfterRemoving(itemIds, quantities, Collections.emptyList(), Collections.emptyList())) {
             throw new IllegalStateException("背包空間不足，請先整理背包再領取放置獎勵");
         }
@@ -105,11 +151,18 @@ public final class IdleCombatSession {
 
     private void addRewardCheck(List<Integer> itemIds, List<Integer> quantities, int itemId, int quantity) {
         int remaining = quantity;
+        int chunkSize = ItemConstants.isEquipment(itemId) ? 1 : Short.MAX_VALUE;
         while (itemId > 0 && remaining > 0) {
             itemIds.add(itemId);
-            int checkQuantity = Math.min(Short.MAX_VALUE, remaining);
+            int checkQuantity = Math.min(chunkSize, remaining);
             quantities.add(checkQuantity);
             remaining -= checkQuantity;
+        }
+    }
+
+    private void grantItems(Character chr, Map<Integer, Integer> rewards) {
+        for (Map.Entry<Integer, Integer> reward : rewards.entrySet()) {
+            grantItem(chr, reward.getKey(), reward.getValue());
         }
     }
 
@@ -119,8 +172,9 @@ public final class IdleCombatSession {
         }
 
         int remaining = quantity;
+        int chunkSize = ItemConstants.isEquipment(itemId) ? 1 : Short.MAX_VALUE;
         while (remaining > 0) {
-            short grantQuantity = (short) Math.min(Short.MAX_VALUE, remaining);
+            short grantQuantity = (short) Math.min(chunkSize, remaining);
             if (!InventoryManipulator.addById(chr.getClient(), itemId, grantQuantity, REWARD_OWNER, -1)) {
                 throw new IllegalStateException("放置獎勵道具發放失敗，請確認背包空間");
             }

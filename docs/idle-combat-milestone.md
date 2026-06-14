@@ -232,25 +232,41 @@
 ### 已完成
 
 - 移除手動指定的普通/稀有獎勵 itemId 設計。
-- `IdleStageConfig` 改成每個放置關卡指定一個 `monsterId`。
-- `IdleCombatSession` 依擊殺數讀取 `MonsterInformationProvider.retrieveEffectiveDrop(monsterId)`，直接使用既有 `drop_data`。
+- `IdleStageConfig` 改成每個放置關卡指定 `mapId` 與 `fallbackMonsterId`。
+- `IdleCombatSession` 依擊殺數從 WZ 地圖 `life` 設定抽怪，再讀取 `MonsterInformationProvider.retrieveEffectiveDrop(monsterId)`，直接使用既有 `drop_data`。
 - 放置掉落累積改成 `itemId -> quantity`。
 - `IDLE_STAGE_RESULT` 改成 reward list：
-  - `int monsterId`
+  - `int mapId`
+  - `int monsterCount`
+  - 多筆 `int monsterId`
   - `int rewardCount`
   - 多筆 `int itemId`
   - 多筆 `int quantity`
 - Unity `IdleStageState` 改成 `PendingRewards` 清單。
-- Unity Debug Panel 改成顯示多筆待領道具。
+- Unity Debug Panel 改成顯示地圖、怪物清單與多筆待領道具。
 
 ### 目前規則
 
 - 任務道具與 PQ 道具先排除，避免放置模式影響任務流程。
+- PQ 是 Party Quest 組隊任務專用道具，通常只應該存在於組隊任務流程。
 - 怪物掉落中的楓幣掉落 `itemId = 0` 先不使用，楓幣仍由 idle meso 計算。
 - 裝備掉落會依照數量拆成一件一件發放，避免 `InventoryManipulator.addById(...)` 的裝備數量限制。
+- 同一怪物如果在地圖 WZ life 設定有多個 spawn 點，抽怪時會保留這個權重。
+- 若 `mapId` 讀不到任何怪物，才會退回使用 `fallbackMonsterId`。
 
 ### 下一個 milestone
 
-- 實機測試 `Enter 20000 -> State -> Claim`，確認背包真的收到該 `monsterId` 的掉落物。
+- 實機測試 `Enter 20000 -> State -> Claim`，確認背包真的收到該 `mapId` 內怪物群的掉落物。
 - 補 item name 顯示：Unity 可用本地 WZ item string，或後端封包額外回傳名稱。
-- 之後把 `IdleStageConfig` 從 Java 常數搬到資料表或設定檔，欄位只需要關卡資料與 `monsterId`，不需要重建掉落表。
+- 之後把 `IdleStageConfig` 從 Java 常數搬到資料表或設定檔，欄位只需要關卡資料、`mapId` 與 fallback，不需要重建掉落表。
+
+## 2026-06-15：放置關卡改讀地圖怪物群
+
+### 已完成
+
+- `MapFactory` 新增只讀 WZ 地圖怪物 ID 的 helper。
+- Idle 不建立 `MapleMap`、不 spawn 怪物，只讀 `map/life` 中 `type = m` 的怪物 ID。
+- `IdleStageConfig` 保留放置用 `stageId`，另外新增楓之谷 `mapId`。
+- 每次放置擊殺會從該地圖怪物清單抽一隻怪，再用該怪既有掉落表擲掉落。
+- 封包改回傳 `mapId` 與 `monsterIds` 清單。
+- Unity Debug Panel 改顯示地圖 ID 與怪物 ID 清單。

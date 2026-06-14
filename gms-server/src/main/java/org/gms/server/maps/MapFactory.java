@@ -40,6 +40,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -331,6 +332,43 @@ public class MapFactory {
         map.generateMapDropRangeCache();
 
         return map;
+    }
+
+    public static List<Integer> getMonsterIdsFromWz(int mapid) {
+        List<Integer> monsterIds = new ArrayList<>();
+        String mapName = getMapName(mapid);
+        Data mapData = mapSource.getData(mapName);
+        if (mapData == null) {
+            return monsterIds;
+        }
+
+        Data infoData = mapData.getChildByPath("info");
+        if (infoData != null) {
+            String link = DataTool.getString(infoData.getChildByPath("link"), "");
+            if (!link.equals("")) {
+                mapData = mapSource.getData(getMapName(Integer.parseInt(link)));
+                if (mapData == null) {
+                    return monsterIds;
+                }
+            }
+        }
+
+        Data lifeData = mapData.getChildByPath("life");
+        if (lifeData == null) {
+            return monsterIds;
+        }
+
+        for (Data life : lifeData) {
+            String type = DataTool.getString(life.getChildByPath("type"), "");
+            if (!"m".equals(type)) {
+                continue;
+            }
+            String id = DataTool.getString(life.getChildByPath("id"), "");
+            if (!id.isEmpty()) {
+                monsterIds.add(Integer.parseInt(id));
+            }
+        }
+        return monsterIds;
     }
 
     private static AbstractLoadedLife loadLife(int id, String type, int cy, int f, int fh, int rx0, int rx1, int x, int y, int hide) {

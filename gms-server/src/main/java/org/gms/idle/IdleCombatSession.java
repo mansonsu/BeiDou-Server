@@ -81,7 +81,8 @@ public final class IdleCombatSession {
                 totalKills,
                 pendingExp,
                 pendingMeso,
-                stage.getMonsterId(),
+                stage.getMapId(),
+                stage.getMonsterIds(),
                 snapshotRewards(),
                 playerPower,
                 stage.getRecommendedPower()
@@ -93,14 +94,17 @@ public final class IdleCombatSession {
     }
 
     private void rollMonsterDrops(Character chr, int kills) {
-        List<MonsterDropEntry> drops = MonsterInformationProvider.getInstance().retrieveEffectiveDrop(stage.getMonsterId());
-        if (drops.isEmpty()) {
+        List<Integer> monsterIds = stage.getMonsterIds();
+        if (monsterIds.isEmpty()) {
             return;
         }
 
         ItemInformationProvider itemInfo = ItemInformationProvider.getInstance();
+        MonsterInformationProvider monsterInfo = MonsterInformationProvider.getInstance();
         float dropRate = chr.getDropRate();
         for (int i = 0; i < kills; i++) {
+            int monsterId = monsterIds.get(Randomizer.nextInt(monsterIds.size()));
+            List<MonsterDropEntry> drops = monsterInfo.retrieveEffectiveDrop(monsterId);
             for (MonsterDropEntry drop : drops) {
                 if (!isIdleEligibleDrop(itemInfo, drop)) {
                     continue;

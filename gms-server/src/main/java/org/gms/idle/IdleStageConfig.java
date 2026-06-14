@@ -1,7 +1,11 @@
 package org.gms.idle;
 
+import org.gms.server.maps.MapFactory;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class IdleStageConfig {
@@ -9,9 +13,9 @@ public final class IdleStageConfig {
 
     static {
         Map<Integer, IdleStageConfig> stages = new LinkedHashMap<>();
-        register(stages, new IdleStageConfig(20000, "弓箭手訓練場", 1, 40, 8, 8, 12, 5000, 100100));
-        register(stages, new IdleStageConfig(20010, "森林小徑", 10, 140, 18, 22, 35, 5000, 1110100));
-        register(stages, new IdleStageConfig(20020, "燃燒木道", 25, 380, 35, 70, 90, 5000, 1110101));
+        register(stages, new IdleStageConfig(20000, "弓箭手訓練場", 1, 40, 8, 8, 12, 5000, 100000000, 100100));
+        register(stages, new IdleStageConfig(20010, "森林小徑", 10, 140, 18, 22, 35, 5000, 101010000, 1110100));
+        register(stages, new IdleStageConfig(20020, "燃燒木道", 25, 380, 35, 70, 90, 5000, 101020000, 1110101));
         STAGES = Collections.unmodifiableMap(stages);
     }
 
@@ -23,10 +27,12 @@ public final class IdleStageConfig {
     private final int baseExpPerKill;
     private final int baseMesoPerKill;
     private final int killIntervalMillis;
-    private final int monsterId;
+    private final int mapId;
+    private final int fallbackMonsterId;
+    private volatile List<Integer> monsterIds;
 
     private IdleStageConfig(int stageId, String name, int requiredLevel, int recommendedPower, int monsterLevel,
-                            int baseExpPerKill, int baseMesoPerKill, int killIntervalMillis, int monsterId) {
+                            int baseExpPerKill, int baseMesoPerKill, int killIntervalMillis, int mapId, int fallbackMonsterId) {
         this.stageId = stageId;
         this.name = name;
         this.requiredLevel = requiredLevel;
@@ -35,7 +41,8 @@ public final class IdleStageConfig {
         this.baseExpPerKill = baseExpPerKill;
         this.baseMesoPerKill = baseMesoPerKill;
         this.killIntervalMillis = killIntervalMillis;
-        this.monsterId = monsterId;
+        this.mapId = mapId;
+        this.fallbackMonsterId = fallbackMonsterId;
     }
 
     private static void register(Map<Integer, IdleStageConfig> stages, IdleStageConfig config) {
@@ -78,7 +85,25 @@ public final class IdleStageConfig {
         return killIntervalMillis;
     }
 
-    public int getMonsterId() {
-        return monsterId;
+    public int getMapId() {
+        return mapId;
+    }
+
+    public List<Integer> getMonsterIds() {
+        List<Integer> current = monsterIds;
+        if (current != null) {
+            return current;
+        }
+
+        synchronized (this) {
+            if (monsterIds == null) {
+                List<Integer> loadedMonsterIds = MapFactory.getMonsterIdsFromWz(mapId);
+                if (loadedMonsterIds.isEmpty()) {
+                    loadedMonsterIds = Collections.singletonList(fallbackMonsterId);
+                }
+                monsterIds = Collections.unmodifiableList(new ArrayList<>(loadedMonsterIds));
+            }
+            return monsterIds;
+        }
     }
 }

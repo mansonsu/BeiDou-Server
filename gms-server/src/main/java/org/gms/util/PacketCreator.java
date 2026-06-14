@@ -7542,7 +7542,11 @@ public class PacketCreator {
         p.writeInt(snapshot.getTotalKills());
         p.writeInt(snapshot.getPendingExp());
         p.writeInt(snapshot.getPendingMeso());
-        p.writeInt(snapshot.getMonsterId());
+        p.writeInt(snapshot.getMapId());
+        p.writeInt(snapshot.getMonsterIds().size());
+        for (Integer monsterId : snapshot.getMonsterIds()) {
+            p.writeInt(monsterId);
+        }
         p.writeInt(snapshot.getPendingRewards().size());
         for (IdleRewardItem reward : snapshot.getPendingRewards()) {
             p.writeInt(reward.getItemId());

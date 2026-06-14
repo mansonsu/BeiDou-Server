@@ -62,8 +62,8 @@ byte success
 int stageId
 int elapsedSeconds
 int totalKills
-int pendingExp
-int pendingMeso
+int gainedExp
+int gainedMeso
 int mapId
 int monsterCount
 repeat monsterCount:
@@ -109,7 +109,8 @@ fallbackMonsterId
 - 同一怪物若在地圖 life 設定中有多個 spawn 點，放置模式抽怪時也會自然提高權重。
 - `fallbackMonsterId` 只在 WZ 地圖讀不到怪物時使用，避免設定錯誤直接中斷流程。
 - 放置模式第一版排除任務道具與 PQ 道具，避免污染任務流程；PQ 是 Party Quest 組隊任務專用道具。
-- 楓幣使用怪物掉落表中的 `itemId = 0`，成功擲中後套用角色楓幣倍率與 `MESOUP` buff，再累積到 `pendingMeso`。
+- EXP 與楓幣在 tick 結算當下直接發給角色，封包中的 `gainedExp` / `gainedMeso` 只代表本次 tick 新增數量。
+- 楓幣使用怪物掉落表中的 `itemId = 0`，成功擲中後套用角色楓幣倍率與 `MESOUP` buff，再直接發給角色。
 
 ## 仍屬 Idle 自訂的部分
 

@@ -7540,8 +7540,8 @@ public class PacketCreator {
         p.writeInt(snapshot.getStageId());
         p.writeInt(snapshot.getElapsedSeconds());
         p.writeInt(snapshot.getTotalKills());
-        p.writeInt(snapshot.getPendingExp());
-        p.writeInt(snapshot.getPendingMeso());
+        p.writeInt(snapshot.getGainedExp());
+        p.writeInt(snapshot.getGainedMeso());
         p.writeInt(snapshot.getMapId());
         p.writeInt(snapshot.getMonsterIds().size());
         for (Integer monsterId : snapshot.getMonsterIds()) {

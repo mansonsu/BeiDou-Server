@@ -10,8 +10,8 @@ public final class IdleCombatSnapshot {
     private final String stageName;
     private final int elapsedSeconds;
     private final int totalKills;
-    private final int pendingExp;
-    private final int pendingMeso;
+    private final int gainedExp;
+    private final int gainedMeso;
     private final int mapId;
     private final List<Integer> monsterIds;
     private final List<IdleRewardItem> pendingRewards;
@@ -19,15 +19,15 @@ public final class IdleCombatSnapshot {
     private final int recommendedPower;
 
     public IdleCombatSnapshot(int characterId, int stageId, String stageName, int elapsedSeconds, int totalKills,
-                              int pendingExp, int pendingMeso, int mapId, List<Integer> monsterIds, List<IdleRewardItem> pendingRewards,
+                              int gainedExp, int gainedMeso, int mapId, List<Integer> monsterIds, List<IdleRewardItem> pendingRewards,
                               int playerPower, int recommendedPower) {
         this.characterId = characterId;
         this.stageId = stageId;
         this.stageName = stageName;
         this.elapsedSeconds = elapsedSeconds;
         this.totalKills = totalKills;
-        this.pendingExp = pendingExp;
-        this.pendingMeso = pendingMeso;
+        this.gainedExp = gainedExp;
+        this.gainedMeso = gainedMeso;
         this.mapId = mapId;
         this.monsterIds = Collections.unmodifiableList(new ArrayList<>(monsterIds));
         this.pendingRewards = Collections.unmodifiableList(new ArrayList<>(pendingRewards));
@@ -55,12 +55,12 @@ public final class IdleCombatSnapshot {
         return totalKills;
     }
 
-    public int getPendingExp() {
-        return pendingExp;
+    public int getGainedExp() {
+        return gainedExp;
     }
 
-    public int getPendingMeso() {
-        return pendingMeso;
+    public int getGainedMeso() {
+        return gainedMeso;
     }
 
     public int getMapId() {

@@ -280,7 +280,7 @@
 - `IdleCombatCalculator` 不再產生楓幣，避免與怪物掉落表重複。
 - `IdleCombatSession` 將 `drop_data` 內 `itemId = 0` 視為楓幣掉落。
 - 楓幣掉落會套用角色 `getMesoRate()` 與 `MESOUP` buff。
-- 領取時仍透過 `pendingMeso` 一次發給角色。
+- 這一版曾透過 `pendingMeso` 一次發給角色；後續已改成 tick 當下直接發放。
 
 ## 2026-06-15：放置 EXP 改用怪物原始 EXP
 
@@ -290,7 +290,7 @@
 - `IdleCombatCalculator` 不再產生 EXP，只負責計算本次應有擊殺數。
 - `IdleCombatSession` 每次抽到怪物後，讀取 `LifeFactory.getMonster(monsterId).getExp()`。
 - EXP 會套用角色 `getExpRate()`、`getMobExpRate()`、`EXP_INCREASE`、`EXP_BUFF` 與 family buff。
-- 領取時仍透過 `pendingExp` 一次發給角色。
+- 這一版曾透過 `pendingExp` 一次發給角色；後續已改成 tick 當下直接發放。
 
 ### 目前仍是 Idle 自訂
 
@@ -299,3 +299,14 @@
 - 戰力影響擊殺數的倍率。
 - 擊殺間隔。
 - WZ 地圖讀不到怪物時使用的 fallback 怪物。
+
+## 2026-06-15：EXP 與楓幣改為 tick 直接發放
+
+### 已完成
+
+- 移除 `IdleCombatSession` 內的 `pendingExp` 與 `pendingMeso` 狀態。
+- 每次 idle tick 擲出怪物 EXP 後，立刻呼叫 `Character.gainExp(...)`。
+- 每次 idle tick 擲出怪物楓幣後，立刻呼叫 `Character.gainMeso(...)`。
+- `claim` 現在只負責待領道具，不再發放 EXP / 楓幣。
+- `IDLE_STAGE_RESULT` 原本兩個位置保留，但語意改為 `gainedExp` / `gainedMeso`，代表本次 tick 直接獲得的數量。
+- Unity Debug Panel 改顯示「本次 EXP / 本次楓幣」。

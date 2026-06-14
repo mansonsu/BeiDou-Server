@@ -25,8 +25,8 @@ public final class IdleCombatSession {
     private IdleStageConfig stage;
     private long lastTickMillis;
     private int totalKills;
-    private int pendingExp;
-    private int pendingMeso;
+    private int lastGainedExp;
+    private int lastGainedMeso;
     private final Map<Integer, Integer> pendingRewards = new LinkedHashMap<>();
 
     public IdleCombatSession(int characterId, IdleStageConfig stage, long nowMillis) {
@@ -38,29 +38,27 @@ public final class IdleCombatSession {
     public synchronized IdleCombatSnapshot tick(Character chr, IdleCombatCalculator calculator, long nowMillis) {
         long elapsedMillis = Math.max(0L, nowMillis - lastTickMillis);
         IdleCombatResult result = calculator.calculate(chr, stage, elapsedMillis);
+        lastGainedExp = 0;
+        lastGainedMeso = 0;
         if (result.getKills() > 0) {
             lastTickMillis = nowMillis;
             totalKills = safeAdd(totalKills, result.getKills());
             rollMonsterDrops(chr, result.getKills());
+            if (lastGainedExp > 0) {
+                chr.gainExp(lastGainedExp, true, true);
+            }
+            if (lastGainedMeso > 0) {
+                chr.gainMeso(lastGainedMeso, true, true, false);
+            }
         }
         return snapshot(result.getElapsedSeconds(), calculator.calculatePower(chr));
     }
 
     public synchronized IdleCombatSnapshot claim(Character chr, IdleCombatCalculator calculator, long nowMillis) {
         tick(chr, calculator, nowMillis);
-        int claimedExp = pendingExp;
-        int claimedMeso = pendingMeso;
         Map<Integer, Integer> claimedRewards = new LinkedHashMap<>(pendingRewards);
         validateRewardSpace(chr, claimedRewards);
-        if (claimedExp > 0) {
-            chr.gainExp(claimedExp, true, true);
-        }
-        if (claimedMeso > 0) {
-            chr.gainMeso(claimedMeso, true, true, false);
-        }
         grantItems(chr, claimedRewards);
-        pendingExp = 0;
-        pendingMeso = 0;
         pendingRewards.clear();
         return snapshot(0, calculator.calculatePower(chr));
     }
@@ -69,8 +67,8 @@ public final class IdleCombatSession {
         this.stage = nextStage;
         this.lastTickMillis = nowMillis;
         this.totalKills = 0;
-        this.pendingExp = 0;
-        this.pendingMeso = 0;
+        this.lastGainedExp = 0;
+        this.lastGainedMeso = 0;
         this.pendingRewards.clear();
     }
 
@@ -81,8 +79,8 @@ public final class IdleCombatSession {
                 stage.getName(),
                 elapsedSeconds,
                 totalKills,
-                pendingExp,
-                pendingMeso,
+                lastGainedExp,
+                lastGainedMeso,
                 stage.getMapId(),
                 stage.getMonsterIds(),
                 snapshotRewards(),
@@ -150,7 +148,7 @@ public final class IdleCombatSession {
             exp *= chr.getFamilyExp();
         }
 
-        pendingExp = safeAdd(pendingExp, expValueToInteger(exp));
+        lastGainedExp = safeAdd(lastGainedExp, expValueToInteger(exp));
     }
 
     private void rollMesoDrop(Character chr, MonsterDropEntry drop, float dropRate) {
@@ -176,7 +174,7 @@ public final class IdleCombatSession {
         if (mesos <= 0) {
             mesos = Integer.MAX_VALUE;
         }
-        pendingMeso = safeAdd(pendingMeso, mesos);
+        lastGainedMeso = safeAdd(lastGainedMeso, mesos);
     }
 
     private int rollDropAmount(MonsterDropEntry drop) {

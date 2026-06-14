@@ -120,3 +120,45 @@
   - 待領 EXP
   - 待領楓幣
   - 玩家戰力與推薦戰力
+
+## 2026-06-15：Unity Idle Debug Panel 已完成
+
+### Unity 已完成
+
+- 新增 `UIIdleDebugPanel`，用執行期自建 Canvas 的方式顯示，不需要先建立 prefab 或修改 scene。
+- Debug Panel 預設顯示在畫面右上角，按 `F9` 可顯示或隱藏。
+- Panel 目前提供：
+  - Stage 輸入欄，預設 `20000`
+  - `Enter`：送出 `SendIdleStageEnter(stageId)`
+  - `State`：送出 `SendIdleStageState()`
+  - `Claim`：送出 `SendIdleStageClaim()`
+  - `Exit`：送出 `SendIdleStageExit()`
+- Panel 已訂閱：
+  - `MapleNetworkService.OnIdleStageResult`
+  - `MapleNetworkService.OnIdleStageError`
+- Panel 會顯示：
+  - 後端訊息
+  - 關卡 ID
+  - 累積秒數
+  - 擊殺數
+  - 待領 EXP
+  - 待領楓幣
+  - 普通掉落摘要
+  - 稀有掉落摘要
+  - 玩家戰力 / 推薦戰力
+
+### 驗證結果
+
+- Unity 執行 `dotnet build Assembly-CSharp.csproj`：成功，0 errors，維持既有 53 warnings。
+- 為了讓 `dotnet build` 編譯新腳本，驗證時曾暫時加入 `Assembly-CSharp.csproj` 編譯項目；驗證後已移除，避免提交 Unity 產生檔。
+
+### 下一個 milestone
+
+- 實機登入角色後，用右上角 Debug Panel 測試：
+  - `Enter 20000`
+  - 等待數秒
+  - `State`
+  - `Claim`
+  - 確認 EXP / 楓幣是否真的增加
+- 若封包流程穩定，下一步開始做正式 Idle 主畫面。
+- 正式 UI 前，建議先補後端掉落物發放設計，避免 UI 先做死欄位。

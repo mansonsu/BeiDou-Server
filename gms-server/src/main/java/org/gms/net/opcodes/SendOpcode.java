@@ -357,6 +357,10 @@ public enum SendOpcode implements Opcode {
     VEGA_SCROLL(0x166), // VEGA卷轴
 
     UPDATE_HPMPAALERT(0x1000), // 更新HP/MP/EXP警报
+    IDLE_INIT_RESULT(0x5100), // 放置版初始化結果：回傳是否成功切換到放置地圖
+    IDLE_STATE_RESULT(0x5101), // 放置版狀態結果：預留給未來回傳放置進度
+    IDLE_CLAIM_RESULT(0x5102), // 放置版領取結果：預留給未來回傳獎勵領取結果
+    IDLE_ERROR(0x51FF), // 放置版錯誤：預留給未來回傳放置系統錯誤
     ;
     private int code = -2;
 

@@ -206,6 +206,11 @@ public enum RecvOpcode implements Opcode {
     USE_HAMMER(0x104), // 使用锤子
 
     SET_HPMPALERT(0x1000), // 设置HP/MP警报
+    IDLE_INIT(0x5000), // 放置版初始化：登入後要求後端切換到放置地圖
+    IDLE_HEARTBEAT(0x5001), // 放置版心跳：確認玩家仍在線上
+    IDLE_CHANGE_MAP(0x5002), // 放置版換圖：預留給未來選擇放置地圖
+    IDLE_CLAIM(0x5003), // 放置版領取：預留給未來領取打怪獎勵
+    IDLE_STATE(0x5004), // 放置版狀態：預留給未來查詢放置進度
     ;
 
     private int code = -2;

@@ -93,8 +93,6 @@ stageId
 name
 requiredLevel
 recommendedPower
-monsterLevel
-baseExpPerKill
 killIntervalMillis
 mapId
 fallbackMonsterId
@@ -106,11 +104,23 @@ fallbackMonsterId
 - 每次玩家查詢、領取、離開時，根據 `lastTickMillis` 計算經過時間。
 - 每個 session 最小 tick 單位可設為 5 秒或 10 秒。
 - 每次結算只更新 session 記憶體；只有 claim 才寫角色 EXP / 楓幣 / 道具。
+- EXP 使用抽到的怪物 `MonsterStats.exp`，並套用角色 `getExpRate()`、`getMobExpRate()`、EXP buff 與 family buff。
 - 掉落直接使用關卡 `mapId` 對應的 WZ 地圖怪物配置，再依抽到的 `monsterId` 讀楓之谷 `drop_data` / `MonsterInformationProvider`。
 - 同一怪物若在地圖 life 設定中有多個 spawn 點，放置模式抽怪時也會自然提高權重。
 - `fallbackMonsterId` 只在 WZ 地圖讀不到怪物時使用，避免設定錯誤直接中斷流程。
 - 放置模式第一版排除任務道具與 PQ 道具，避免污染任務流程；PQ 是 Party Quest 組隊任務專用道具。
 - 楓幣使用怪物掉落表中的 `itemId = 0`，成功擲中後套用角色楓幣倍率與 `MESOUP` buff，再累積到 `pendingMeso`。
+
+## 仍屬 Idle 自訂的部分
+
+- `stageId`：放置模式自己的關卡 ID，不是楓之谷原始地圖 ID。
+- `name`：放置關卡顯示名稱。
+- `requiredLevel`：放置關卡進入門檻。
+- `recommendedPower`：用來把角色能力換算成擊殺效率。
+- `killIntervalMillis`：每隔多久產生一次基礎擊殺。
+- `fallbackMonsterId`：WZ 地圖讀不到怪物時的保底怪物。
+- `calculatePower`：Idle 自訂戰力公式，用角色總能力值、攻擊、魔攻與等級估算。
+- `powerRatio`：Idle 自訂擊殺倍率，讓戰力高於或低於推薦值時影響擊殺數。
 
 ## Unity 第一版 UI 建議
 

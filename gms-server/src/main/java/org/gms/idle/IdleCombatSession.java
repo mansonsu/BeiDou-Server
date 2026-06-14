@@ -5,6 +5,8 @@ import org.gms.client.Character;
 import org.gms.client.inventory.manipulator.InventoryManipulator;
 import org.gms.constants.inventory.ItemConstants;
 import org.gms.server.ItemInformationProvider;
+import org.gms.server.life.LifeFactory;
+import org.gms.server.life.Monster;
 import org.gms.server.life.MonsterDropEntry;
 import org.gms.server.life.MonsterInformationProvider;
 import org.gms.util.NumberTool;
@@ -39,7 +41,6 @@ public final class IdleCombatSession {
         if (result.getKills() > 0) {
             lastTickMillis = nowMillis;
             totalKills = safeAdd(totalKills, result.getKills());
-            pendingExp = safeAdd(pendingExp, result.getExp());
             rollMonsterDrops(chr, result.getKills());
         }
         return snapshot(result.getElapsedSeconds(), calculator.calculatePower(chr));
@@ -105,6 +106,7 @@ public final class IdleCombatSession {
         float dropRate = chr.getDropRate();
         for (int i = 0; i < kills; i++) {
             int monsterId = monsterIds.get(Randomizer.nextInt(monsterIds.size()));
+            rollMonsterExp(chr, monsterId);
             List<MonsterDropEntry> drops = monsterInfo.retrieveEffectiveDrop(monsterId);
             for (MonsterDropEntry drop : drops) {
                 if (drop.itemId == 0) {
@@ -123,6 +125,32 @@ public final class IdleCombatSession {
                 }
             }
         }
+    }
+
+    private void rollMonsterExp(Character chr, int monsterId) {
+        Monster monster = LifeFactory.getMonster(monsterId);
+        if (monster == null || monster.getExp() <= 0) {
+            return;
+        }
+
+        double exp = monster.getExp();
+        exp *= chr.getExpRate() * chr.getMobExpRate();
+
+        Integer expBonus = chr.getBuffedValue(BuffStat.EXP_INCREASE);
+        if (expBonus != null) {
+            exp += expBonus;
+        }
+
+        Integer expBuff = chr.getBuffedValue(BuffStat.EXP_BUFF);
+        if (expBuff != null) {
+            exp *= 2.0D;
+        }
+
+        if (chr.isFamilyBuff()) {
+            exp *= chr.getFamilyExp();
+        }
+
+        pendingExp = safeAdd(pendingExp, expValueToInteger(exp));
     }
 
     private void rollMesoDrop(Character chr, MonsterDropEntry drop, float dropRate) {
@@ -153,6 +181,15 @@ public final class IdleCombatSession {
 
     private int rollDropAmount(MonsterDropEntry drop) {
         return drop.Maximum > drop.Minimum ? Randomizer.rand(drop.Minimum, drop.Maximum) : Math.max(1, drop.Minimum);
+    }
+
+    private int expValueToInteger(double exp) {
+        if (exp > Integer.MAX_VALUE) {
+            exp = Integer.MAX_VALUE;
+        } else if (exp < 0) {
+            exp = 0;
+        }
+        return (int) Math.round(exp);
     }
 
     private boolean isIdleEligibleDrop(ItemInformationProvider itemInfo, MonsterDropEntry drop) {

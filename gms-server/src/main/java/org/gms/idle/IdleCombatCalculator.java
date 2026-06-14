@@ -11,7 +11,7 @@ public final class IdleCombatCalculator {
 
     public IdleCombatResult calculate(Character chr, IdleStageConfig stage, long elapsedMillis) {
         if (elapsedMillis < stage.getKillIntervalMillis()) {
-            return new IdleCombatResult((int) (elapsedMillis / 1000L), 0, 0);
+            return new IdleCombatResult((int) (elapsedMillis / 1000L), 0);
         }
 
         int rawKills = (int) Math.min(Integer.MAX_VALUE, elapsedMillis / stage.getKillIntervalMillis());
@@ -19,14 +19,6 @@ public final class IdleCombatCalculator {
         double powerRatio = Math.max(0.25D, Math.min(2.0D, (double) power / Math.max(1, stage.getRecommendedPower())));
         int kills = Math.max(1, (int) Math.floor(rawKills * powerRatio));
 
-        int levelDelta = chr.getLevel() - stage.getMonsterLevel();
-        double levelModifier = levelDelta < -10 ? 0.5D : levelDelta > 20 ? 0.7D : 1.0D;
-        int exp = safeMultiply(kills, (int) Math.max(1, Math.floor(stage.getBaseExpPerKill() * levelModifier)));
-
-        return new IdleCombatResult((int) (elapsedMillis / 1000L), kills, exp);
-    }
-
-    private int safeMultiply(int left, int right) {
-        return (int) Math.min(Integer.MAX_VALUE, (long) left * right);
+        return new IdleCombatResult((int) (elapsedMillis / 1000L), kills);
     }
 }

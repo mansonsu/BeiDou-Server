@@ -3,12 +3,10 @@ package org.gms.idle;
 public final class IdleCombatResult {
     private final int elapsedSeconds;
     private final int kills;
-    private final int exp;
 
-    public IdleCombatResult(int elapsedSeconds, int kills, int exp) {
+    public IdleCombatResult(int elapsedSeconds, int kills) {
         this.elapsedSeconds = elapsedSeconds;
         this.kills = kills;
-        this.exp = exp;
     }
 
     public int getElapsedSeconds() {
@@ -17,10 +15,6 @@ public final class IdleCombatResult {
 
     public int getKills() {
         return kills;
-    }
-
-    public int getExp() {
-        return exp;
     }
 
 }

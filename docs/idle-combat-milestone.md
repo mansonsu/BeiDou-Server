@@ -281,3 +281,21 @@
 - `IdleCombatSession` 將 `drop_data` 內 `itemId = 0` 視為楓幣掉落。
 - 楓幣掉落會套用角色 `getMesoRate()` 與 `MESOUP` buff。
 - 領取時仍透過 `pendingMeso` 一次發給角色。
+
+## 2026-06-15：放置 EXP 改用怪物原始 EXP
+
+### 已完成
+
+- 移除 Idle 關卡設定中的 `baseExpPerKill`。
+- `IdleCombatCalculator` 不再產生 EXP，只負責計算本次應有擊殺數。
+- `IdleCombatSession` 每次抽到怪物後，讀取 `LifeFactory.getMonster(monsterId).getExp()`。
+- EXP 會套用角色 `getExpRate()`、`getMobExpRate()`、`EXP_INCREASE`、`EXP_BUFF` 與 family buff。
+- 領取時仍透過 `pendingExp` 一次發給角色。
+
+### 目前仍是 Idle 自訂
+
+- 放置關卡 ID、顯示名稱、進入等級、推薦戰力。
+- 角色戰力公式。
+- 戰力影響擊殺數的倍率。
+- 擊殺間隔。
+- WZ 地圖讀不到怪物時使用的 fallback 怪物。

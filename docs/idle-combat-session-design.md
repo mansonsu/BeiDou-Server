@@ -66,6 +66,8 @@ int pendingExp
 int pendingMeso
 int pendingCommonDrops
 int pendingRareDrops
+int commonRewardItemId
+int rareRewardItemId
 int playerPower
 int recommendedPower
 string message
@@ -93,6 +95,8 @@ baseMesoPerKill
 killIntervalMillis
 commonDropChancePerTenThousand
 rareDropChancePerTenThousand
+commonRewardItemId
+rareRewardItemId
 ```
 
 ## 後端負載原則
@@ -100,8 +104,8 @@ rareDropChancePerTenThousand
 - 不用每秒排程所有在線玩家。
 - 每次玩家查詢、領取、離開時，根據 `lastTickMillis` 計算經過時間。
 - 每個 session 最小 tick 單位可設為 5 秒或 10 秒。
-- 每次結算只更新 session 記憶體；只有 claim 才寫角色 EXP / 楓幣。
-- 掉落先做摘要計數，之後再接背包物品。
+- 每次結算只更新 session 記憶體；只有 claim 才寫角色 EXP / 楓幣 / 道具。
+- 掉落第一版用關卡設定的普通與稀有 itemId，之後再接真實怪物掉落表。
 
 ## Unity 第一版 UI 建議
 
@@ -121,4 +125,3 @@ rareDropChancePerTenThousand
 5. 用手動呼叫封包確認 enter/state/claim/exit 可通。
 6. 再做 Unity UI 與動畫。
 7. 最後才接真實掉落表、背包、符文、方塊、寶箱。
-

@@ -143,8 +143,8 @@
   - 擊殺數
   - 待領 EXP
   - 待領楓幣
-  - 普通掉落摘要
-  - 稀有掉落摘要
+  - 普通掉落摘要與 itemId
+  - 稀有掉落摘要與 itemId
   - 玩家戰力 / 推薦戰力
 
 ### 驗證結果
@@ -191,11 +191,34 @@
 ### 目前限制
 
 - 掉落物還不是從怪物真實掉落表抽出，而是每個放置關卡先指定一組普通/稀有 itemId。
-- 現在回包仍只回傳普通/稀有掉落數量，尚未回傳實際 itemId 與 itemName。
+- 現在回包已回傳普通/稀有掉落數量與 itemId，尚未回傳 itemName。
 - 目前沒有做資料庫持久化，伺服器重啟仍會清空 session。
 
 ### 下一個 milestone
 
-- Unity Debug Panel 顯示本次 Claim 實際發放了哪些 itemId。
-- 後端 `IDLE_STAGE_RESULT` 增加「普通獎勵 itemId / 稀有獎勵 itemId」欄位，或新增一個獎勵明細封包。
+- Unity Debug Panel 已能顯示本次可領取或已發放的普通/稀有 itemId。
+- 後端 `IDLE_STAGE_RESULT` 已增加「普通獎勵 itemId / 稀有獎勵 itemId」欄位。
 - 若要正式做 UI，建議改成獎勵清單格式，不要長期維持 `commonDrops` / `rareDrops` 兩個硬欄位。
+
+## 2026-06-15：Idle Result 回傳獎勵 itemId 已完成
+
+### 已完成
+
+- 後端 `IdleCombatSnapshot` 新增：
+  - `commonRewardItemId`
+  - `rareRewardItemId`
+- 後端 `IDLE_STAGE_RESULT` 封包在掉落數量後新增兩個欄位：
+  - `int commonRewardItemId`
+  - `int rareRewardItemId`
+- Unity `IdleStageState` 已同步新增這兩個欄位。
+- Unity `HandleIdleStageResult(...)` 已同步解析新封包順序。
+- Unity `UIIdleDebugPanel` 已顯示：
+  - `普通掉落：數量 x itemId`
+  - `稀有掉落：數量 x itemId`
+
+### 下一個 milestone
+
+- 如果要接正式 UI，下一步應改成獎勵明細清單格式：
+  - `rewardCount`
+  - 多筆 `itemId / quantity / rarity`
+- 然後 Unity 可以用同一份資料渲染掉落列表，不需要硬寫普通與稀有兩欄。

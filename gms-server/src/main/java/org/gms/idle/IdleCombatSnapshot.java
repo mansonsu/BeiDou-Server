@@ -10,12 +10,14 @@ public final class IdleCombatSnapshot {
     private final int pendingMeso;
     private final int pendingCommonDrops;
     private final int pendingRareDrops;
+    private final int commonRewardItemId;
+    private final int rareRewardItemId;
     private final int playerPower;
     private final int recommendedPower;
 
     public IdleCombatSnapshot(int characterId, int stageId, String stageName, int elapsedSeconds, int totalKills,
                               int pendingExp, int pendingMeso, int pendingCommonDrops, int pendingRareDrops,
-                              int playerPower, int recommendedPower) {
+                              int commonRewardItemId, int rareRewardItemId, int playerPower, int recommendedPower) {
         this.characterId = characterId;
         this.stageId = stageId;
         this.stageName = stageName;
@@ -25,6 +27,8 @@ public final class IdleCombatSnapshot {
         this.pendingMeso = pendingMeso;
         this.pendingCommonDrops = pendingCommonDrops;
         this.pendingRareDrops = pendingRareDrops;
+        this.commonRewardItemId = commonRewardItemId;
+        this.rareRewardItemId = rareRewardItemId;
         this.playerPower = playerPower;
         this.recommendedPower = recommendedPower;
     }
@@ -63,6 +67,14 @@ public final class IdleCombatSnapshot {
 
     public int getPendingRareDrops() {
         return pendingRareDrops;
+    }
+
+    public int getCommonRewardItemId() {
+        return commonRewardItemId;
+    }
+
+    public int getRareRewardItemId() {
+        return rareRewardItemId;
     }
 
     public int getPlayerPower() {

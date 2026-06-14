@@ -82,6 +82,8 @@ public final class IdleCombatSession {
                 pendingMeso,
                 pendingCommonDrops,
                 pendingRareDrops,
+                stage.getCommonRewardItemId(),
+                stage.getRareRewardItemId(),
                 playerPower,
                 stage.getRecommendedPower()
         );

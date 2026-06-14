@@ -7543,6 +7543,8 @@ public class PacketCreator {
         p.writeInt(snapshot.getPendingMeso());
         p.writeInt(snapshot.getPendingCommonDrops());
         p.writeInt(snapshot.getPendingRareDrops());
+        p.writeInt(snapshot.getCommonRewardItemId());
+        p.writeInt(snapshot.getRareRewardItemId());
         p.writeInt(snapshot.getPlayerPower());
         p.writeInt(snapshot.getRecommendedPower());
         p.writeString(message + "：" + snapshot.getStageName());

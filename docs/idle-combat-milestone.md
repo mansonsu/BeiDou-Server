@@ -1,0 +1,122 @@
+# IdleCombatSession Milestone
+
+## 2026-06-15：建立第一版方向
+
+### 已決策
+
+- 放置版沿用既有 socket 與加解密流程。
+- 玩家仍可走原本登入、選角、進地圖流程。
+- 放置戰鬥不使用實體 MapleMap、怪物 AI、多人地圖同步與地上掉落物。
+- 玩家必須在線，才會持續累積放置收益。
+- 第一版只做 EXP / 楓幣結算與掉落摘要，不先寫入背包掉落物。
+
+### 第一版後端目標
+
+- 新增 `IdleStageConfig`：暫時用 Java 常數定義關卡。
+- 新增 `IdleCombatResult`：承載 tick 結果。
+- 新增 `IdleCombatCalculator`：純計算器，依角色能力與關卡計算收益。
+- 新增 `IdleCombatSession`：保存玩家放置狀態與累積收益。
+- 新增 `IdleCombatService`：管理角色的 session。
+- 新增 socket handlers：
+  - `IdleStageEnterHandler`
+  - `IdleStageStateHandler`
+  - `IdleStageClaimHandler`
+  - `IdleStageExitHandler`
+- 新增 packet：
+  - `IDLE_STAGE_RESULT`
+  - `IDLE_STAGE_ERROR`
+
+### 第一版 Unity 目標
+
+- 新增 `InOpCode` / `OutOpCode`。
+- 新增 `IdleStageState` 資料類。
+- 新增 `OnIdleStageResult` / `OnIdleStageError` 事件。
+- 新增 send methods：
+  - `SendIdleStageEnter(int stageId)`
+  - `SendIdleStageState()`
+  - `SendIdleStageClaim()`
+  - `SendIdleStageExit()`
+- 新增 result handler，先用事件與 log 驗證，不先做完整 UI。
+
+### 待辦
+
+- 第二階段接 Unity UI。
+- 第三階段接真實掉落表與背包。
+- 第四階段接符文、方塊、寶箱、Boss 門票。
+- 第五階段做資料表與營運調參工具。
+
+## 2026-06-15：第一版骨架已完成
+
+### 後端已完成
+
+- 新增 `org.gms.idle` 套件，建立第一版放置戰鬥核心：
+  - `IdleStageConfig`
+  - `IdleCombatResult`
+  - `IdleCombatCalculator`
+  - `IdleCombatSnapshot`
+  - `IdleCombatSession`
+  - `IdleCombatService`
+- 新增第一批放置關卡設定，先用 Java 常數管理：
+  - `20000`：弓箭手訓練場
+  - `20010`：森林小徑
+  - `20020`：燃燒木道
+- 新增接收封包：
+  - `IDLE_STAGE_ENTER(0x5000)`：放置版：進入或切換放置關卡
+  - `IDLE_STAGE_STATE(0x5001)`：放置版：查詢目前放置狀態
+  - `IDLE_STAGE_CLAIM(0x5002)`：放置版：領取目前累積獎勵
+  - `IDLE_STAGE_EXIT(0x5003)`：放置版：離開放置關卡
+- 新增送出封包：
+  - `IDLE_STAGE_RESULT(0x5100)`：放置版：回傳放置關卡狀態或操作結果
+  - `IDLE_STAGE_ERROR(0x5101)`：放置版：回傳放置關卡錯誤訊息
+- 新增 handlers：
+  - `IdleStageEnterHandler`
+  - `IdleStageStateHandler`
+  - `IdleStageClaimHandler`
+  - `IdleStageExitHandler`
+- 新增 `PacketCreator.idleStageResult(...)` 與 `PacketCreator.idleStageError(...)`。
+- 第一版 `claim` 已能發放 EXP 與楓幣，掉落物目前只回傳摘要數量，尚未寫入背包。
+
+### Unity 已完成
+
+- 新增 `InOpCode` / `OutOpCode` 放置封包常數。
+- 新增 `IdleStageState` 資料類，對應後端 `IDLE_STAGE_RESULT` 欄位。
+- 新增事件：
+  - `OnIdleStageResult`
+  - `OnIdleStageError`
+- 新增封包解析：
+  - `HandleIdleStageResult(PacketReader reader)`
+  - `HandleIdleStageError(PacketReader reader)`
+- 新增送出方法：
+  - `SendIdleStageEnter(int stageId)`
+  - `SendIdleStageState()`
+  - `SendIdleStageClaim()`
+  - `SendIdleStageExit()`
+
+### 驗證結果
+
+- 後端執行 `.\build-windows.bat`：成功。
+- Unity 執行 `dotnet build Assembly-CSharp.csproj`：成功，0 errors，保留既有 53 warnings。
+
+### 目前限制
+
+- Unity 尚未做畫面按鈕或正式 UI，所以現在只是網路層可對接。
+- 目前不會在進入一般地圖後自動送 `IDLE_STAGE_ENTER`，避免再次干擾原本登入與進圖流程。
+- 放置 session 只存在記憶體，伺服器重啟會清空。
+- 掉落物還沒有接真實掉落表、背包欄位與道具發放。
+- 關卡設定目前寫死在 Java，之後應改成資料表或設定檔。
+
+### 下一個 milestone
+
+- 在 Unity 做一個開發用 Idle Debug Panel：
+  - 進入 `20000`
+  - 查詢狀態
+  - 領取獎勵
+  - 離開放置
+- Debug Panel 驗證成功後，再改成正式放置主畫面。
+- 正式 UI 第一版只需要顯示：
+  - 目前關卡
+  - 累積秒數
+  - 擊殺數
+  - 待領 EXP
+  - 待領楓幣
+  - 玩家戰力與推薦戰力

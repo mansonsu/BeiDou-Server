@@ -57,6 +57,7 @@ import org.gms.constants.id.ItemId;
 import org.gms.constants.id.MapId;
 import org.gms.constants.id.NpcId;
 import org.gms.constants.inventory.ItemConstants;
+import org.gms.idle.IdleCombatSnapshot;
 import org.gms.constants.skills.Buccaneer;
 import org.gms.constants.skills.Corsair;
 import org.gms.constants.skills.ThunderBreaker;
@@ -7528,6 +7529,30 @@ public class PacketCreator {
         OutPacket p = OutPacket.create(SendOpcode.UPDATE_HPMPAALERT);
         p.writeByte(hp);
         p.writeByte(mp);
+        return p;
+    }
+
+    public static Packet idleStageResult(byte action, boolean success, IdleCombatSnapshot snapshot, String message) {
+        OutPacket p = OutPacket.create(SendOpcode.IDLE_STAGE_RESULT);
+        p.writeByte(action);
+        p.writeBool(success);
+        p.writeInt(snapshot.getStageId());
+        p.writeInt(snapshot.getElapsedSeconds());
+        p.writeInt(snapshot.getTotalKills());
+        p.writeInt(snapshot.getPendingExp());
+        p.writeInt(snapshot.getPendingMeso());
+        p.writeInt(snapshot.getPendingCommonDrops());
+        p.writeInt(snapshot.getPendingRareDrops());
+        p.writeInt(snapshot.getPlayerPower());
+        p.writeInt(snapshot.getRecommendedPower());
+        p.writeString(message + "：" + snapshot.getStageName());
+        return p;
+    }
+
+    public static Packet idleStageError(byte action, String message) {
+        OutPacket p = OutPacket.create(SendOpcode.IDLE_STAGE_ERROR);
+        p.writeByte(action);
+        p.writeString(message == null ? "放置系統發生未知錯誤" : message);
         return p;
     }
 

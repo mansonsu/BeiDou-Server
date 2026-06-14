@@ -357,6 +357,9 @@ public enum SendOpcode implements Opcode {
     VEGA_SCROLL(0x166), // VEGA卷轴
 
     UPDATE_HPMPAALERT(0x1000), // 更新HP/MP/EXP警报
+
+    IDLE_STAGE_RESULT(0x5100), // 放置版：回傳放置關卡狀態或操作結果
+    IDLE_STAGE_ERROR(0x5101), // 放置版：回傳放置關卡錯誤訊息
     ;
     private int code = -2;
 

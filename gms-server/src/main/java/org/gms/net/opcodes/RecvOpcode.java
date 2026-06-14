@@ -206,6 +206,11 @@ public enum RecvOpcode implements Opcode {
     USE_HAMMER(0x104), // 使用锤子
 
     SET_HPMPALERT(0x1000), // 设置HP/MP警报
+
+    IDLE_STAGE_ENTER(0x5000), // 放置版：進入或切換放置關卡
+    IDLE_STAGE_STATE(0x5001), // 放置版：查詢目前放置狀態
+    IDLE_STAGE_CLAIM(0x5002), // 放置版：領取目前累積獎勵
+    IDLE_STAGE_EXIT(0x5003), // 放置版：離開放置關卡
     ;
 
     private int code = -2;

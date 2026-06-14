@@ -31,5 +31,5 @@ mkdir "%STATIC_DIR%"
 xcopy "%ROOT%gms-ui\dist\*" "%STATIC_DIR%\" /E /I /Y >nul
 
 pushd "%ROOT%"
-call "%MAVEN%" -B -ntp -pl gms-server -am -DskipTests package
+call "%MAVEN%" -B -ntp -pl gms-server -am -DskipTests clean package
 popd

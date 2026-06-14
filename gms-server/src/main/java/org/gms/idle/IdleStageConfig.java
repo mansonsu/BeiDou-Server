@@ -9,9 +9,9 @@ public final class IdleStageConfig {
 
     static {
         Map<Integer, IdleStageConfig> stages = new LinkedHashMap<>();
-        register(stages, new IdleStageConfig(20000, "弓箭手訓練場", 1, 40, 8, 8, 12, 5000, 120, 8));
-        register(stages, new IdleStageConfig(20010, "森林小徑", 10, 140, 18, 22, 35, 5000, 150, 10));
-        register(stages, new IdleStageConfig(20020, "燃燒木道", 25, 380, 35, 70, 90, 5000, 180, 14));
+        register(stages, new IdleStageConfig(20000, "弓箭手訓練場", 1, 40, 8, 8, 12, 5000, 120, 8, 4000000, 4010000));
+        register(stages, new IdleStageConfig(20010, "森林小徑", 10, 140, 18, 22, 35, 5000, 150, 10, 4000001, 4010001));
+        register(stages, new IdleStageConfig(20020, "燃燒木道", 25, 380, 35, 70, 90, 5000, 180, 14, 4000002, 4010002));
         STAGES = Collections.unmodifiableMap(stages);
     }
 
@@ -25,10 +25,13 @@ public final class IdleStageConfig {
     private final int killIntervalMillis;
     private final int commonDropChancePerTenThousand;
     private final int rareDropChancePerTenThousand;
+    private final int commonRewardItemId;
+    private final int rareRewardItemId;
 
     private IdleStageConfig(int stageId, String name, int requiredLevel, int recommendedPower, int monsterLevel,
                             int baseExpPerKill, int baseMesoPerKill, int killIntervalMillis,
-                            int commonDropChancePerTenThousand, int rareDropChancePerTenThousand) {
+                            int commonDropChancePerTenThousand, int rareDropChancePerTenThousand,
+                            int commonRewardItemId, int rareRewardItemId) {
         this.stageId = stageId;
         this.name = name;
         this.requiredLevel = requiredLevel;
@@ -39,6 +42,8 @@ public final class IdleStageConfig {
         this.killIntervalMillis = killIntervalMillis;
         this.commonDropChancePerTenThousand = commonDropChancePerTenThousand;
         this.rareDropChancePerTenThousand = rareDropChancePerTenThousand;
+        this.commonRewardItemId = commonRewardItemId;
+        this.rareRewardItemId = rareRewardItemId;
     }
 
     private static void register(Map<Integer, IdleStageConfig> stages, IdleStageConfig config) {
@@ -87,5 +92,13 @@ public final class IdleStageConfig {
 
     public int getRareDropChancePerTenThousand() {
         return rareDropChancePerTenThousand;
+    }
+
+    public int getCommonRewardItemId() {
+        return commonRewardItemId;
+    }
+
+    public int getRareRewardItemId() {
+        return rareRewardItemId;
     }
 }

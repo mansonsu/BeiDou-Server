@@ -27,6 +27,7 @@ public final class IdleCombatSession {
     private int totalKills;
     private int lastGainedExp;
     private int lastGainedMeso;
+    private double carriedDamage;
     private final Map<Integer, Integer> pendingRewards = new LinkedHashMap<>();
 
     public IdleCombatSession(int characterId, IdleStageConfig stage, long nowMillis) {
@@ -37,7 +38,8 @@ public final class IdleCombatSession {
 
     public synchronized IdleCombatSnapshot tick(Character chr, IdleCombatCalculator calculator, long nowMillis) {
         long elapsedMillis = Math.max(0L, nowMillis - lastTickMillis);
-        IdleCombatResult result = calculator.calculate(chr, stage, elapsedMillis);
+        IdleCombatResult result = calculator.calculate(chr, stage, elapsedMillis, carriedDamage);
+        carriedDamage = result.getRemainingDamage();
         lastGainedExp = 0;
         lastGainedMeso = 0;
         if (result.getKills() > 0) {
@@ -69,6 +71,7 @@ public final class IdleCombatSession {
         this.totalKills = 0;
         this.lastGainedExp = 0;
         this.lastGainedMeso = 0;
+        this.carriedDamage = 0.0D;
         this.pendingRewards.clear();
     }
 

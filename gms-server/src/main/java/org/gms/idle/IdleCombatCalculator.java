@@ -1,24 +1,63 @@
 package org.gms.idle;
 
 import org.gms.client.Character;
+import org.gms.server.life.LifeFactory;
+import org.gms.server.life.Monster;
+
+import java.util.List;
 
 public final class IdleCombatCalculator {
+    private final IdleCombatDamageCalculator damageCalculator = new IdleCombatDamageCalculator();
+
     public int calculatePower(Character chr) {
-        int primaryStats = chr.getTotalStr() + chr.getTotalDex() + chr.getTotalInt() + chr.getTotalLuk();
-        int attackStats = (chr.getTotalWatk() * 8) + (chr.getTotalMagic() * 4);
-        return Math.max(1, primaryStats + attackStats + (chr.getLevel() * 10));
+        return damageCalculator.calculatePower(chr);
     }
 
     public IdleCombatResult calculate(Character chr, IdleStageConfig stage, long elapsedMillis) {
+        return calculate(chr, stage, elapsedMillis, 0.0D);
+    }
+
+    public IdleCombatResult calculate(Character chr, IdleStageConfig stage, long elapsedMillis, double carriedDamage) {
         if (elapsedMillis < stage.getKillIntervalMillis()) {
-            return new IdleCombatResult((int) (elapsedMillis / 1000L), 0);
+            return new IdleCombatResult((int) (elapsedMillis / 1000L), 0, Math.max(0.0D, carriedDamage));
         }
 
-        int rawKills = (int) Math.min(Integer.MAX_VALUE, elapsedMillis / stage.getKillIntervalMillis());
-        int power = calculatePower(chr);
-        double powerRatio = Math.max(0.25D, Math.min(2.0D, (double) power / Math.max(1, stage.getRecommendedPower())));
-        int kills = Math.max(1, (int) Math.floor(rawKills * powerRatio));
+        long attacks = elapsedMillis / stage.getKillIntervalMillis();
+        double averageMonsterHp = calculateAverageMonsterHp(stage.getMonsterIds());
+        double averageDamage = calculateAverageDamage(chr, stage.getMonsterIds());
+        double totalDamage = Math.max(0.0D, carriedDamage) + (averageDamage * attacks);
+        int kills = (int) Math.min(Integer.MAX_VALUE, Math.floor(totalDamage / averageMonsterHp));
+        double remainingDamage = Math.max(0.0D, totalDamage - (kills * averageMonsterHp));
 
-        return new IdleCombatResult((int) (elapsedMillis / 1000L), kills);
+        return new IdleCombatResult((int) (elapsedMillis / 1000L), kills, remainingDamage);
+    }
+
+    private double calculateAverageMonsterHp(List<Integer> monsterIds) {
+        double totalHp = 0.0D;
+        int loadedMonsters = 0;
+        for (Integer monsterId : monsterIds) {
+            Monster monster = LifeFactory.getMonster(monsterId);
+            if (monster == null || monster.getMaxHp() <= 0) {
+                continue;
+            }
+            totalHp += monster.getMaxHp();
+            loadedMonsters++;
+        }
+        return loadedMonsters > 0 ? totalHp / loadedMonsters : 1.0D;
+    }
+
+    private double calculateAverageDamage(Character chr, List<Integer> monsterIds) {
+        double totalDamage = 0.0D;
+        int loadedMonsters = 0;
+        IdleDamageContext context = IdleDamageContext.defaults();
+        for (Integer monsterId : monsterIds) {
+            Monster monster = LifeFactory.getMonster(monsterId);
+            if (monster == null) {
+                continue;
+            }
+            totalDamage += damageCalculator.calculateExpectedDamagePerAttack(chr, monster, context);
+            loadedMonsters++;
+        }
+        return loadedMonsters > 0 ? totalDamage / loadedMonsters : 1.0D;
     }
 }

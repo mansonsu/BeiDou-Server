@@ -132,36 +132,62 @@
 
 若未來要做戰鬥 log 或更接近原版的命中表現，可再改成逐 hit 隨機。
 
-## 建議實作：IdleCombatDamageCalculator
+## 已實作：IdleCombatDamageCalculator
 
-後續建議新增 `IdleCombatDamageCalculator`，專責放置戰鬥 server-side 傷害。
+目前已新增 `IdleCombatDamageCalculator`，專責放置戰鬥 server-side 傷害。`IdleCombatCalculator` 不再用自訂 power ratio 決定擊殺數，而是用公式推導：
+
+```text
+每次攻擊期望傷害 = IdleCombatDamageCalculator.calculateExpectedDamagePerAttack(...)
+本輪總傷害 = 上輪未打完傷害 + 每次攻擊期望傷害 * 攻擊次數
+擊殺數 = floor(本輪總傷害 / 平均怪物 HP)
+剩餘傷害 = 本輪總傷害 - 擊殺數 * 平均怪物 HP
+```
+
+剩餘傷害保存在 `IdleCombatSession.carriedDamage`，所以如果角色 10 秒內打不死怪，傷害不會歸零，下一次 server 主動推送時會繼續累積。
 
 輸入：
 
 - `Character chr`
 - 怪物資料
-- `IdleStageConfig stage`
-- 預設技能或職業對應技能
+- `IdleDamageContext`
 
 輸出：
 
-- 每秒平均傷害 DPS。
-- 每 10 秒可擊殺怪物數。
-- 每 10 秒取得的 EXP、楓幣與掉落機率結果。
+- 每次攻擊期望傷害。
+- 角色目前面板戰力 `playerPower`，目前用最大屬性攻擊力表示。
 
-實作順序：
+### 目前已套用的係數
 
-1. 讀取角色 STR/DEX/INT/LUK 與物攻、魔攻。
-2. 建立職業主副屬性與武器係數對照。
-3. 先用普通攻擊或預設技能計算面板傷害。
-4. 套用怪物防禦、等級差距、一般怪物傷害。
-5. 用期望爆擊計算平均單 hit 傷害。
-6. 依怪物 HP 計算每秒與每 10 秒擊殺數。
-7. 依擊殺數發放原始怪物 EXP、楓幣，並計算原始掉落表。
+- 總主屬性、總副屬性：讀取 `Character.getTotalStr/Dex/Int/Luk()`。
+- 物理攻擊、魔法攻擊：讀取 `Character.getTotalWatk()`、`Character.getTotalMagic()`。
+- 武器係數：有裝備武器時讀取 `ItemInformationProvider.getWeaponType()`；沒裝備時依職業給預設武器。
+- 魔法職業：用 INT 作主屬性、LUK 作副屬性，套用武器係數與總魔攻。
+- 物理職業：沿用後端既有 `Character.calculateMaxBaseDamage()`，它會依武器係數、主副屬性與總物攻計算最大面板。
+- 技能倍率：由 `IdleDamageContext.skillPercent` 帶入，預設 100%。
+- 熟練度：用最大面板與最小面板取期望值，預設熟練度 20%。
+- 傷害%、普通怪物傷害%、Boss 傷害%：依怪物是否 Boss 決定套用普通怪或 Boss 傷害，並與傷害%加法疊加。
+- 最終傷害：用乘法係數 `finalDamageMultiplier`。
+- 怪物防禦與無視防禦：用怪物物防/魔防資料推導防禦率，再套用無視防禦。
+- 屬性抗性：套用 `IMMUNE = 0`、`STRONG = 0.5`、`NORMAL/NEUTRAL = 1.0`、`WEAK = 1.5`。
+- 爆擊期望：用爆擊率與爆擊傷害算期望倍率。
+- 等級差距：角色高於怪物時最多 +20%，角色低於怪物時最低保留 10%。
+- 星力地圖修正：保留 required/character 欄位並套用未達標懲罰。
+- 祕法與真實之力修正：依 0%、10%、30%、50%、70%、100%、110%、130%、150% 區間套用。
+
+### 目前仍是預設值的係數
+
+這些不是公式漏做，而是目前後端放置流程還沒有對應資料來源。`IdleDamageContext` 已保留欄位，後續接技能、潛能、超級屬性、地圖需求時可以直接帶入：
+
+- 技能倍率目前預設 100%，尚未依職業選放置技能。
+- 傷害%、普通怪物傷害%、Boss 傷害%、最終傷害目前預設 0% 或 1.0 倍。
+- 無視防禦目前預設 0%。
+- 爆擊率與爆擊傷害目前預設 0%。
+- 星力、祕法、真實之力目前預設沒有地圖需求，因此倍率為 1.0。
+- 現代版潛能、附加潛能、超級屬性、聯盟、內在能力等資料目前不在這個後端資料模型內，不能硬捏數字。
 
 ## 當前結論
 
-- 放置戰鬥傷害應由 server 計算，client 不回報傷害。
+- 放置戰鬥傷害已改由 server 計算，client 不回報傷害。
 - EXP 與楓幣不做 pending，擊殺結算時直接給角色。
 - 道具因為背包格數、不可交易、任務道具、裝備隨機屬性等規則較複雜，暫時維持 pending。
-- 傷害公式要分階段實作，不要一次塞成單一巨大公式，否則很難比對角色能力、裝備、技能與怪物防禦問題。
+- 傷害公式已拆成可逐項驗證的計算器；後續重點是補齊技能選擇與角色進階屬性資料來源，而不是再改放置主流程。

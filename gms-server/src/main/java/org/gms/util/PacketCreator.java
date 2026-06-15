@@ -7554,6 +7554,10 @@ public class PacketCreator {
         }
         p.writeInt(snapshot.getPlayerPower());
         p.writeInt(snapshot.getRecommendedPower());
+        p.writeInt(snapshot.getLastKills());
+        p.writeInt(snapshot.getLastDamage());
+        p.writeInt(snapshot.getLastMonsterId());
+        p.writeInt(snapshot.getAttackIntervalMillis());
         p.writeString(message + "：" + snapshot.getStageName());
         return p;
     }

@@ -27,6 +27,9 @@ public final class IdleCombatSession {
     private int totalKills;
     private int lastGainedExp;
     private int lastGainedMeso;
+    private int lastKills;
+    private int lastDamage;
+    private int lastMonsterId;
     private double carriedDamage;
     private final Map<Integer, Integer> pendingRewards = new LinkedHashMap<>();
 
@@ -42,8 +45,13 @@ public final class IdleCombatSession {
         carriedDamage = result.getRemainingDamage();
         lastGainedExp = 0;
         lastGainedMeso = 0;
-        if (result.getKills() > 0) {
+        lastKills = result.getKills();
+        lastDamage = result.getEstimatedDamagePerAttack();
+        lastMonsterId = result.getMonsterId();
+        if (elapsedMillis >= stage.getKillIntervalMillis()) {
             lastTickMillis = nowMillis;
+        }
+        if (result.getKills() > 0) {
             totalKills = safeAdd(totalKills, result.getKills());
             rollMonsterDrops(chr, result.getKills());
             if (lastGainedExp > 0) {
@@ -71,6 +79,9 @@ public final class IdleCombatSession {
         this.totalKills = 0;
         this.lastGainedExp = 0;
         this.lastGainedMeso = 0;
+        this.lastKills = 0;
+        this.lastDamage = 0;
+        this.lastMonsterId = 0;
         this.carriedDamage = 0.0D;
         this.pendingRewards.clear();
     }
@@ -88,7 +99,11 @@ public final class IdleCombatSession {
                 stage.getMonsterIds(),
                 snapshotRewards(),
                 playerPower,
-                stage.getRecommendedPower()
+                stage.getRecommendedPower(),
+                lastKills,
+                lastDamage,
+                lastMonsterId,
+                stage.getKillIntervalMillis()
         );
     }
 

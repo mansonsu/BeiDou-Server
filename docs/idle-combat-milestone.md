@@ -310,3 +310,26 @@
 - `claim` 現在只負責待領道具，不再發放 EXP / 楓幣。
 - `IDLE_STAGE_RESULT` 原本兩個位置保留，但語意改為 `gainedExp` / `gainedMeso`，代表本次 tick 直接獲得的數量。
 - Unity Debug Panel 改顯示「本次 EXP / 本次楓幣」。
+
+## 2026-06-15：放置同步改為 5 秒並支援 Prototype 戰鬥演出
+
+### 已完成
+
+- 後端放置狀態主動推送週期從 10 秒改為 5 秒。
+- `IDLE_STAGE_RESULT` 追加本輪演出用欄位：
+  - `lastKills`：本輪擊殺數。
+  - `lastDamage`：本輪估算每次攻擊傷害。
+  - `lastMonsterId`：本輪主要演出怪物 ID。
+  - `attackIntervalMillis`：前端播放攻擊節奏用間隔。
+- `IdleCombatSession` 會保留未打完怪物的 `carriedDamage`，即使本輪沒有擊殺也不會遺失傷害進度。
+- Unity `MapleNetworkService` 已解析新增欄位。
+- Unity `UIIdleDebugPanel` 改成簡易放置戰鬥 prototype 面板：
+  - 左側玩家、右側怪物。
+  - 收到 server 結果後播放攻擊位移、傷害飄字、擊破提示。
+  - 顯示本輪擊殺、總擊殺、本輪 EXP、楓幣、戰力與待領道具。
+
+### 下一個 milestone
+
+- 把目前 UI 方塊替換成真正角色與怪物 sprite / animator。
+- 依職業選擇預設放置技能，讓 `lastDamage` 與演出技能一致。
+- 讓掉落物以圖示飛入待領獎勵列表。

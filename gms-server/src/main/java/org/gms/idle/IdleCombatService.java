@@ -15,7 +15,7 @@ public final class IdleCombatService {
     public static final byte ACTION_STATE = 2;
     public static final byte ACTION_CLAIM = 3;
     public static final byte ACTION_EXIT = 4;
-    private static final long PUSH_INTERVAL_MILLIS = 10_000L;
+    private static final long PUSH_INTERVAL_MILLIS = 5_000L;
 
     private static final IdleCombatService INSTANCE = new IdleCombatService();
 

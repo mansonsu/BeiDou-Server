@@ -17,10 +17,15 @@ public final class IdleCombatSnapshot {
     private final List<IdleRewardItem> pendingRewards;
     private final int playerPower;
     private final int recommendedPower;
+    private final int lastKills;
+    private final int lastDamage;
+    private final int lastMonsterId;
+    private final int attackIntervalMillis;
 
     public IdleCombatSnapshot(int characterId, int stageId, String stageName, int elapsedSeconds, int totalKills,
                               int gainedExp, int gainedMeso, int mapId, List<Integer> monsterIds, List<IdleRewardItem> pendingRewards,
-                              int playerPower, int recommendedPower) {
+                              int playerPower, int recommendedPower, int lastKills, int lastDamage, int lastMonsterId,
+                              int attackIntervalMillis) {
         this.characterId = characterId;
         this.stageId = stageId;
         this.stageName = stageName;
@@ -33,6 +38,10 @@ public final class IdleCombatSnapshot {
         this.pendingRewards = Collections.unmodifiableList(new ArrayList<>(pendingRewards));
         this.playerPower = playerPower;
         this.recommendedPower = recommendedPower;
+        this.lastKills = lastKills;
+        this.lastDamage = lastDamage;
+        this.lastMonsterId = lastMonsterId;
+        this.attackIntervalMillis = attackIntervalMillis;
     }
 
     public int getCharacterId() {
@@ -81,5 +90,21 @@ public final class IdleCombatSnapshot {
 
     public int getRecommendedPower() {
         return recommendedPower;
+    }
+
+    public int getLastKills() {
+        return lastKills;
+    }
+
+    public int getLastDamage() {
+        return lastDamage;
+    }
+
+    public int getLastMonsterId() {
+        return lastMonsterId;
+    }
+
+    public int getAttackIntervalMillis() {
+        return attackIntervalMillis;
     }
 }

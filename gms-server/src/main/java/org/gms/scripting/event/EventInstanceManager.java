@@ -29,6 +29,7 @@ import org.gms.constants.inventory.ItemConstants;
 import org.gms.net.server.coordinator.world.EventRecallCoordinator;
 import org.gms.net.server.world.Party;
 import org.gms.net.server.world.PartyCharacter;
+import org.gms.util.I18nUtil;
 import org.gms.util.NumberTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -332,7 +333,7 @@ public class EventInstanceManager {
             try {
                 invokeScriptFunction("scheduledTimeout", EventInstanceManager.this);
             } catch (ScriptException | NoSuchMethodException ex) {
-                log.error("事件脚本 {} 没有封装scheduledTimeout函数", em.getName(), ex);
+                log.error(I18nUtil.getLogMessage("EventInstanceManager.scheduledTimeout.error1"), em.getName(), ex);
             }
         }, time);
     }
@@ -349,7 +350,7 @@ public class EventInstanceManager {
                     try {
                         invokeScriptFunction("scheduledTimeout", EventInstanceManager.this);
                     } catch (ScriptException | NoSuchMethodException ex) {
-                        log.error("事件脚本 {} 没有封装scheduledTimeout函数", em.getName(), ex);
+                        log.error(I18nUtil.getLogMessage("EventInstanceManager.scheduledTimeout.error1"), em.getName(), ex);
                     }
                 }, nextTime);
             }
@@ -421,7 +422,7 @@ public class EventInstanceManager {
         try {
             invokeScriptFunction("playerUnregistered", EventInstanceManager.this, chr);
         } catch (ScriptException | NoSuchMethodException ex) {
-            log.error("事件脚本 {} 没有封装playerUnregistered函数", em.getName(), ex);
+            log.error(I18nUtil.getLogMessage("EventInstanceManager.playerUnregistered.error1"), em.getName(), ex);
         }
 
         writeLock.lock();
@@ -1452,7 +1453,7 @@ public class EventInstanceManager {
         if (GameConfig.getServerBoolean("damage_ranking")) {
             recordDamage = true;
         } else {
-            log.debug("全局伤害统计未启用，无法记录伤害");
+            log.debug(I18nUtil.getLogMessage("EventInstanceManager.damageDisabled.debug1"));
         }
     }
 
@@ -1463,25 +1464,25 @@ public class EventInstanceManager {
         playerNames.putIfAbsent(chr.getId(), chr.getName()); //保存角色名
         // 防止溢出
         if (newValue < 0) {
-            log.warn("玩家 {} 伤害累计溢出，重置为最大值", chr.getName());
+            log.warn(I18nUtil.getLogMessage("EventInstanceManager.damageOverflow.warn1"), chr.getName());
             playerDamage.put(chr.getId(), Long.MAX_VALUE);
         } else if (newValue > MAX_DAMAGE_THRESHOLD) {
-            log.warn("玩家 {} 伤害累计接近最大值", chr.getName());
+            log.warn(I18nUtil.getLogMessage("EventInstanceManager.damageNearMax.warn1"), chr.getName());
         }
     }
 
     // 添加通报伤害排名的方法
     public synchronized void broadcastDamageRanking() {
         if (!GameConfig.getServerBoolean("damage_ranking")) {
-            log.debug("伤害统计功能已被服务器禁用。");
+            log.debug(I18nUtil.getLogMessage("EventInstanceManager.damageFeatureDisabled.debug1"));
             return;
         }
         if (!recordDamage) {
-            log.debug("该副本未开启伤害统计。");
+            log.debug(I18nUtil.getLogMessage("EventInstanceManager.damageInstanceDisabled.debug1"));
             return;
         }
         if (playerDamage.isEmpty()) {
-            log.debug("尚无伤害数据。");
+            log.debug(I18nUtil.getLogMessage("EventInstanceManager.noDamageData.debug1"));
             return;
         }
 

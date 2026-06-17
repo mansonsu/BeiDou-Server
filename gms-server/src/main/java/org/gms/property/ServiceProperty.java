@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 public class ServiceProperty {
-    private String language;
+    private String language = "zh-TW";
     private RateLimitProperty rateLimit;
     private String wanHost;
     private String lanHost;

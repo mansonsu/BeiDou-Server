@@ -45,6 +45,7 @@ import org.gms.server.CashShop;
 import org.gms.server.CashShop.CashItemFactory;
 import org.gms.server.ItemInformationProvider;
 import org.gms.service.NoteService;
+import org.gms.util.I18nUtil;
 import org.gms.util.PacketCreator;
 import org.gms.util.Pair;
 
@@ -532,7 +533,7 @@ public final class CashOperationHandler extends AbstractPacketHandler {
 
     private static boolean canBuy(Character chr, ModifiedCashItemDO item, int cash) {
         if (item != null && item.isSelling() && item.getPrice() <= cash) {
-            log.info("玩家 {} 购买了现金道具 {} (SN {}) 花费 {}", chr, ItemInformationProvider.getInstance().getName(item.getItemId()), item.getSn(), item.getPrice());
+            log.info(I18nUtil.getLogMessage("CashOperationHandler.buyCashItem.info1"), chr, ItemInformationProvider.getInstance().getName(item.getItemId()), item.getSn(), item.getPrice());
             return true;
         } else {
             return false;

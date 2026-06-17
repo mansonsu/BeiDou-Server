@@ -49,6 +49,7 @@ import org.gms.net.server.handlers.login.ViewAllCharHandler;
 import org.gms.net.server.handlers.login.ViewAllCharRegisterPicHandler;
 import org.gms.net.server.handlers.login.ViewAllCharSelectedHandler;
 import org.gms.net.server.handlers.login.ViewAllCharSelectedWithPicHandler;
+import org.gms.util.I18nUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +131,7 @@ public final class PacketProcessor {
                 }
                 break;
             default:
-                log.warn("找不到指定的版本注册 Opcode Handler");
+                log.warn(I18nUtil.getLogMessage("PacketProcessor.missingOpcodeHandler.warn1"));
                 break;
         }
     }

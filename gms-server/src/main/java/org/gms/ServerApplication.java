@@ -25,7 +25,7 @@ public class ServerApplication {
         try {
             initDb(args);
         } catch (Exception e) {
-            log.error("自动创建数据库失败：", e);
+            log.error("自動建立資料庫失敗：", e);
             return;
         }
         SpringApplication.run(ServerApplication.class, args);

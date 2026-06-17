@@ -45,6 +45,7 @@ import org.gms.net.server.services.task.channel.OverallService;
 import org.gms.net.server.services.type.ChannelServices;
 import org.gms.net.server.world.Party;
 import org.gms.net.server.world.World;
+import org.gms.util.I18nUtil;
 import org.gms.util.NumberTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -2018,7 +2019,7 @@ public class MapleMap {
             } else if (monster.getId() == MobId.GIANT_SNOWMAN_LV5_EASY || monster.getId() == MobId.GIANT_SNOWMAN_LV5_MEDIUM || monster.getId() == MobId.GIANT_SNOWMAN_LV5_HARD) {
                 monsterItemDrop(monster, monster.getDropPeriodTime());
             } else {
-                log.error("[异常刷怪] 检测到未配置定时刷新的怪物: ID={}", monster.getId());
+                log.error(I18nUtil.getLogMessage("MapleMap.unconfiguredTimedMob.error1"), monster.getId());
             }
         }
 
@@ -2092,7 +2093,7 @@ public class MapleMap {
     public Portal getDoorPortal(int doorid) {
         Portal doorPortal = portals.get(0x80 + doorid);
         if (doorPortal == null) {
-            log.warn("[传动点] 地图 {} (ID:{}) 不存在传送门ID为 {} 的入口", mapName, mapid, doorid);
+            log.warn(I18nUtil.getLogMessage("MapleMap.missingDoorPortal.warn1"), mapName, mapid, doorid);
             return portals.get(0x80);
         }
 

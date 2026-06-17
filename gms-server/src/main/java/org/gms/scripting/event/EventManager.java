@@ -30,6 +30,7 @@ import org.gms.net.server.guild.Guild;
 import org.gms.net.server.world.Party;
 import org.gms.net.server.world.PartyCharacter;
 import org.gms.net.server.world.World;
+import org.gms.util.I18nUtil;
 import org.gms.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,7 +211,7 @@ public class EventManager {
             try {
                 iv.invokeFunction(methodName, eim);
             } catch (ScriptException | NoSuchMethodException ex) {
-                log.error("eim（{}），methodName（{}），Event script schedule（事件脚本时间表）", eim,methodName,ex);
+                log.error(I18nUtil.getLogMessage("EventManager.schedule.error1"), eim, methodName, ex);
             }
         };
 
@@ -229,7 +230,7 @@ public class EventManager {
             try {
                 iv.invokeFunction(methodName, (Object) null);
             } catch (ScriptException | NoSuchMethodException ex) {
-                log.error("Event script scheduleAtTimestamp（事件脚本调度时间戳）", ex);
+                log.error(I18nUtil.getLogMessage("EventManager.scheduleAtTimestamp.error1"), ex);
             }
         };
 
@@ -583,7 +584,7 @@ public class EventManager {
 
                         eim.startEvent();
                     } catch (ScriptException | NoSuchMethodException ex) {
-                        log.error("Event script startInstance（事件脚本startInstance）", ex);
+                        log.error(I18nUtil.getLogMessage("EventManager.startInstance.error1"), ex);
                     }
 
                     return true;
@@ -673,7 +674,7 @@ public class EventManager {
 
                         eim.startEvent();
                     } catch (ScriptException | NoSuchMethodException ex) {
-                        log.error("Event script startInstance（事件脚本startInstance）", ex);
+                        log.error(I18nUtil.getLogMessage("EventManager.startInstance.error1"), ex);
                     }
 
                     return true;
@@ -765,7 +766,7 @@ public class EventManager {
 
                         eim.startEvent();
                     } catch (ScriptException | NoSuchMethodException ex) {
-                        log.error("Event script startInstance（事件脚本startInstance）", ex);
+                        log.error(I18nUtil.getLogMessage("EventManager.startInstance.error1"), ex);
                     }
 
                     return true;
@@ -860,7 +861,7 @@ public class EventManager {
 
                         eim.startEvent();
                     } catch (ScriptException | NoSuchMethodException ex) {
-                        log.error("Event script startInstance（事件脚本启动实例）", ex);
+                        log.error(I18nUtil.getLogMessage("EventManager.startInstance.error1"), ex);
                     }
 
                     return true;
@@ -953,7 +954,7 @@ public class EventManager {
 
                         eim.startEvent();
                     } catch (ScriptException | NoSuchMethodException ex) {
-                        log.error("Event script startInstance（事件脚本启动实例）", ex);
+                        log.error(I18nUtil.getLogMessage("EventManager.startInstance.error1"), ex);
                     }
 
                     return true;
@@ -1002,7 +1003,7 @@ public class EventManager {
         try {
             iv.invokeFunction("clearPQ", eim);
         } catch (ScriptException | NoSuchMethodException ex) {
-            log.error("Event script clearPQ（事件脚本清除PQ）", ex);
+            log.error(I18nUtil.getLogMessage("EventManager.clearPQ.error1"), ex);
         }
     }
 
@@ -1015,7 +1016,7 @@ public class EventManager {
         try {
             iv.invokeFunction("clearPQ", eim, toMap);
         } catch (ScriptException | NoSuchMethodException ex) {
-            log.error("Event script clearPQ（事件脚本清除PQ）", ex);
+            log.error(I18nUtil.getLogMessage("EventManager.clearPQ.error1"), ex);
         }
     }
 

@@ -19,6 +19,9 @@ if not exist "%MAVEN%" (
 
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 
+call powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT%tools\check-flyway-migrations.ps1"
+if errorlevel 1 exit /b 1
+
 pushd "%ROOT%gms-ui"
 call yarn install --frozen-lockfile
 if errorlevel 1 exit /b 1

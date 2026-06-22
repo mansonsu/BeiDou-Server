@@ -307,7 +307,7 @@
 - 移除 `IdleCombatSession` 內的 `pendingExp` 與 `pendingMeso` 狀態。
 - 每次 idle tick 擲出怪物 EXP 後，立刻呼叫 `Character.gainExp(...)`。
 - 每次 idle tick 擲出怪物楓幣後，立刻呼叫 `Character.gainMeso(...)`。
-- `claim` 現在只負責待領道具，不再發放 EXP / 楓幣。
+- `claim` 現在只觸發一次即時結算；EXP / 楓幣 / 道具都在 tick 當下直接發放。
 - `IDLE_STAGE_RESULT` 原本兩個位置保留，但語意改為 `gainedExp` / `gainedMeso`，代表本次 tick 直接獲得的數量。
 - Unity Debug Panel 改顯示「本次 EXP / 本次楓幣」。
 
@@ -326,10 +326,10 @@
 - Unity `UIIdleDebugPanel` 改成簡易放置戰鬥 prototype 面板：
   - 左側玩家、右側怪物。
   - 收到 server 結果後播放攻擊位移、傷害飄字、擊破提示。
-  - 顯示本輪擊殺、總擊殺、本輪 EXP、楓幣、戰力與待領道具。
+  - 顯示本輪擊殺、總擊殺、本輪 EXP、楓幣、戰力與本輪取得道具。
 
 ### 下一個 milestone
 
 - 把目前 UI 方塊替換成真正角色與怪物 sprite / animator。
 - 依職業選擇預設放置技能，讓 `lastDamage` 與演出技能一致。
-- 讓掉落物以圖示飛入待領獎勵列表。
+- 讓掉落物以圖示飛入本輪取得獎勵列表。

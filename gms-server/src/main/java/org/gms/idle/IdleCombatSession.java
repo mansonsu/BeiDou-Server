@@ -31,7 +31,7 @@ public final class IdleCombatSession {
     private int lastDamage;
     private int lastMonsterId;
     private double carriedDamage;
-    private final Map<Integer, Integer> pendingRewards = new LinkedHashMap<>();
+    private final Map<Integer, Integer> lastGainedRewards = new LinkedHashMap<>();
 
     public IdleCombatSession(int characterId, IdleStageConfig stage, long nowMillis) {
         this.characterId = characterId;
@@ -42,18 +42,15 @@ public final class IdleCombatSession {
     public synchronized IdleCombatSnapshot tick(Character chr, IdleCombatCalculator calculator, long nowMillis) {
         long elapsedMillis = Math.max(0L, nowMillis - lastTickMillis);
         IdleCombatResult result = calculator.calculate(chr, stage, elapsedMillis, carriedDamage);
-        carriedDamage = result.getRemainingDamage();
         lastGainedExp = 0;
         lastGainedMeso = 0;
         lastKills = result.getKills();
         lastDamage = result.getEstimatedDamagePerAttack();
         lastMonsterId = result.getMonsterId();
-        if (elapsedMillis >= stage.getKillIntervalMillis()) {
-            lastTickMillis = nowMillis;
-        }
+        lastGainedRewards.clear();
         if (result.getKills() > 0) {
-            totalKills = safeAdd(totalKills, result.getKills());
             rollMonsterDrops(chr, result.getKills());
+            totalKills = safeAdd(totalKills, result.getKills());
             if (lastGainedExp > 0) {
                 chr.gainExp(lastGainedExp, true, true);
             }
@@ -61,16 +58,15 @@ public final class IdleCombatSession {
                 chr.gainMeso(lastGainedMeso, true, true, false);
             }
         }
+        carriedDamage = result.getRemainingDamage();
+        if (elapsedMillis >= stage.getKillIntervalMillis()) {
+            lastTickMillis = nowMillis;
+        }
         return snapshot(result.getElapsedSeconds(), calculator.calculatePower(chr));
     }
 
     public synchronized IdleCombatSnapshot claim(Character chr, IdleCombatCalculator calculator, long nowMillis) {
-        tick(chr, calculator, nowMillis);
-        Map<Integer, Integer> claimedRewards = new LinkedHashMap<>(pendingRewards);
-        validateRewardSpace(chr, claimedRewards);
-        grantItems(chr, claimedRewards);
-        pendingRewards.clear();
-        return snapshot(0, calculator.calculatePower(chr));
+        return tick(chr, calculator, nowMillis);
     }
 
     public synchronized void changeStage(IdleStageConfig nextStage, long nowMillis) {
@@ -83,7 +79,7 @@ public final class IdleCombatSession {
         this.lastDamage = 0;
         this.lastMonsterId = 0;
         this.carriedDamage = 0.0D;
-        this.pendingRewards.clear();
+        this.lastGainedRewards.clear();
     }
 
     private IdleCombatSnapshot snapshot(int elapsedSeconds, int playerPower) {
@@ -120,6 +116,7 @@ public final class IdleCombatSession {
         ItemInformationProvider itemInfo = ItemInformationProvider.getInstance();
         MonsterInformationProvider monsterInfo = MonsterInformationProvider.getInstance();
         float dropRate = chr.getDropRate();
+        Map<Integer, Integer> rolledRewards = new LinkedHashMap<>();
         for (int i = 0; i < kills; i++) {
             int monsterId = monsterIds.get(Randomizer.nextInt(monsterIds.size()));
             rollMonsterExp(chr, monsterId);
@@ -137,8 +134,15 @@ public final class IdleCombatSession {
                 int dropChance = (int) Math.min((float) drop.chance * dropRate * cardRate, Integer.MAX_VALUE);
                 if (Randomizer.nextInt(999999) < dropChance) {
                     int quantity = rollDropAmount(drop);
-                    addPendingReward(drop.itemId, quantity);
+                    addReward(rolledRewards, drop.itemId, quantity);
                 }
+            }
+        }
+        if (!rolledRewards.isEmpty()) {
+            validateRewardSpace(chr, rolledRewards);
+            grantItems(chr, rolledRewards);
+            for (Map.Entry<Integer, Integer> reward : rolledRewards.entrySet()) {
+                addReward(lastGainedRewards, reward.getKey(), reward.getValue());
             }
         }
     }
@@ -215,16 +219,16 @@ public final class IdleCombatSession {
                 && !itemInfo.isPartyQuestItem(drop.itemId);
     }
 
-    private void addPendingReward(int itemId, int quantity) {
+    private void addReward(Map<Integer, Integer> rewards, int itemId, int quantity) {
         if (itemId <= 0 || quantity <= 0) {
             return;
         }
-        pendingRewards.merge(itemId, quantity, this::safeAdd);
+        rewards.merge(itemId, quantity, this::safeAdd);
     }
 
     private List<IdleRewardItem> snapshotRewards() {
         List<IdleRewardItem> rewards = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> reward : pendingRewards.entrySet()) {
+        for (Map.Entry<Integer, Integer> reward : lastGainedRewards.entrySet()) {
             rewards.add(new IdleRewardItem(reward.getKey(), reward.getValue()));
         }
         return rewards;

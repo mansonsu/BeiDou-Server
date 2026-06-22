@@ -360,6 +360,8 @@ public enum SendOpcode implements Opcode {
 
     IDLE_STAGE_RESULT(0x5100), // 放置版：回傳放置關卡狀態或操作結果
     IDLE_STAGE_ERROR(0x5101), // 放置版：回傳放置關卡錯誤訊息
+    IDLE_EXPLORE_RESULT(0x5102), // Unity idle: exploration map result
+    IDLE_EXPLORE_ERROR(0x5103), // Unity idle: exploration map error
     ;
     private int code = -2;
 

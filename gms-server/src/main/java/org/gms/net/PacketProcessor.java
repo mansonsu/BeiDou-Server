@@ -320,5 +320,7 @@ public final class PacketProcessor {
         registerHandler(RecvOpcode.IDLE_STAGE_STATE, new IdleStageStateHandler());
         registerHandler(RecvOpcode.IDLE_STAGE_CLAIM, new IdleStageClaimHandler());
         registerHandler(RecvOpcode.IDLE_STAGE_EXIT, new IdleStageExitHandler());
+        registerHandler(RecvOpcode.IDLE_EXPLORE_SELECT, new IdleExploreMapSelectHandler());
+        registerHandler(RecvOpcode.IDLE_EXPLORE_STATE, new IdleExploreMapStateHandler());
     }
 }

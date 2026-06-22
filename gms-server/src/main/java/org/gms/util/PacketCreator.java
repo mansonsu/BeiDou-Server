@@ -58,6 +58,7 @@ import org.gms.constants.id.MapId;
 import org.gms.constants.id.NpcId;
 import org.gms.constants.inventory.ItemConstants;
 import org.gms.idle.IdleCombatSnapshot;
+import org.gms.idle.IdleExploreMapState;
 import org.gms.idle.IdleRewardItem;
 import org.gms.constants.skills.Buccaneer;
 import org.gms.constants.skills.Corsair;
@@ -7569,4 +7570,28 @@ public class PacketCreator {
         return p;
     }
 
+    public static Packet idleExploreResult(byte action, boolean success, IdleExploreMapState state, String message) {
+        OutPacket p = OutPacket.create(SendOpcode.IDLE_EXPLORE_RESULT);
+        p.writeByte(action);
+        p.writeBool(success);
+        p.writeBool(state.hasMap());
+        p.writeInt(state.getMapId());
+        p.writeString(state.getStreetName());
+        p.writeString(state.getMapName());
+        p.writeInt(state.getMonsterIds().size());
+        for (Integer monsterId : state.getMonsterIds()) {
+            p.writeInt(monsterId);
+        }
+        p.writeLong(state.getStartedAtMillis());
+        p.writeLong(state.getUpdatedAtMillis());
+        p.writeString(message == null ? "" : message);
+        return p;
+    }
+
+    public static Packet idleExploreError(byte action, String message) {
+        OutPacket p = OutPacket.create(SendOpcode.IDLE_EXPLORE_ERROR);
+        p.writeByte(action);
+        p.writeString(message == null ? "探索地圖操作失敗" : message);
+        return p;
+    }
 }

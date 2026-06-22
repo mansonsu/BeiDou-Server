@@ -97,7 +97,7 @@ public final class IdleCombatService {
                 IdleCombatSnapshot snapshot = entry.getValue().tick(chr, calculator, System.currentTimeMillis());
                 chr.getClient().sendPacket(PacketCreator.idleStageResult(ACTION_STATE, true, snapshot, "放置狀態已自動更新"));
             } catch (RuntimeException ex) {
-                inactiveCharacterIds.add(characterId);
+                chr.getClient().sendPacket(PacketCreator.idleStageError(ACTION_STATE, ex.getMessage()));
             }
         }
 

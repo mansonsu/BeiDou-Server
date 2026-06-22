@@ -103,7 +103,7 @@ fallbackMonsterId
 - 不用每秒排程所有在線玩家。
 - 每次玩家查詢、領取、離開時，根據 `lastTickMillis` 計算經過時間。
 - 每個 session 最小 tick 單位可設為 5 秒或 10 秒。
-- 每次結算只更新 session 記憶體；只有 claim 才寫角色 EXP / 楓幣 / 道具。
+- 每次結算由 server 直接寫角色 EXP / 楓幣 / 道具；封包只回傳本輪實際取得的摘要。
 - EXP 使用抽到的怪物 `MonsterStats.exp`，並套用角色 `getExpRate()`、`getMobExpRate()`、EXP buff 與 family buff。
 - 掉落直接使用關卡 `mapId` 對應的 WZ 地圖怪物配置，再依抽到的 `monsterId` 讀楓之谷 `drop_data` / `MonsterInformationProvider`。
 - 同一怪物若在地圖 life 設定中有多個 spawn 點，放置模式抽怪時也會自然提高權重。

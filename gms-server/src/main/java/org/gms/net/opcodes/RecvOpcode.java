@@ -211,6 +211,8 @@ public enum RecvOpcode implements Opcode {
     IDLE_STAGE_STATE(0x5001), // 放置版：查詢目前放置狀態
     IDLE_STAGE_CLAIM(0x5002), // 放置版：領取目前累積獎勵
     IDLE_STAGE_EXIT(0x5003), // 放置版：離開放置關卡
+    IDLE_EXPLORE_SELECT(0x5004), // Unity idle: select exploration map
+    IDLE_EXPLORE_STATE(0x5005), // Unity idle: query exploration map
     ;
 
     private int code = -2;

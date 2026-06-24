@@ -1,91 +1,24 @@
 package org.gms.idle;
 
-import org.gms.server.maps.MapFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public final class IdleStageConfig {
-    private static final Map<Integer, IdleStageConfig> STAGES;
+    private final List<Integer> monsterIds;
 
-    static {
-        Map<Integer, IdleStageConfig> stages = new LinkedHashMap<>();
-        register(stages, new IdleStageConfig(20000, "弓箭手訓練場", 1, 40, 5000, 100000000, 100100));
-        register(stages, new IdleStageConfig(20010, "森林小徑", 10, 140, 5000, 101010000, 1110100));
-        register(stages, new IdleStageConfig(20020, "燃燒木道", 25, 380, 5000, 101020000, 1110101));
-        STAGES = Collections.unmodifiableMap(stages);
+    private IdleStageConfig(List<Integer> monsterIds) {
+        this.monsterIds = Collections.unmodifiableList(new ArrayList<>(monsterIds));
     }
 
-    private final int stageId;
-    private final String name;
-    private final int requiredLevel;
-    private final int recommendedPower;
-    private final int killIntervalMillis;
-    private final int mapId;
-    private final int fallbackMonsterId;
-    private volatile List<Integer> monsterIds;
-
-    private IdleStageConfig(int stageId, String name, int requiredLevel, int recommendedPower,
-                            int killIntervalMillis, int mapId, int fallbackMonsterId) {
-        this.stageId = stageId;
-        this.name = name;
-        this.requiredLevel = requiredLevel;
-        this.recommendedPower = recommendedPower;
-        this.killIntervalMillis = killIntervalMillis;
-        this.mapId = mapId;
-        this.fallbackMonsterId = fallbackMonsterId;
-    }
-
-    private static void register(Map<Integer, IdleStageConfig> stages, IdleStageConfig config) {
-        stages.put(config.stageId, config);
-    }
-
-    public static IdleStageConfig get(int stageId) {
-        return STAGES.get(stageId);
-    }
-
-    public int getStageId() {
-        return stageId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getRequiredLevel() {
-        return requiredLevel;
-    }
-
-    public int getRecommendedPower() {
-        return recommendedPower;
-    }
-
-    public int getKillIntervalMillis() {
-        return killIntervalMillis;
-    }
-
-    public int getMapId() {
-        return mapId;
+    public static IdleStageConfig fromExploreMap(int mapId, List<Integer> monsterIds) {
+        if (monsterIds == null || monsterIds.isEmpty()) {
+            throw new IllegalArgumentException("探索地圖沒有可用怪物: " + mapId);
+        }
+        return new IdleStageConfig(monsterIds);
     }
 
     public List<Integer> getMonsterIds() {
-        List<Integer> current = monsterIds;
-        if (current != null) {
-            return current;
-        }
-
-        synchronized (this) {
-            if (monsterIds == null) {
-                List<Integer> loadedMonsterIds = MapFactory.getMonsterIdsFromWz(mapId);
-                if (loadedMonsterIds.isEmpty()) {
-                    loadedMonsterIds = Collections.singletonList(fallbackMonsterId);
-                }
-                monsterIds = Collections.unmodifiableList(new ArrayList<>(loadedMonsterIds));
-            }
-            return monsterIds;
-        }
+        return monsterIds;
     }
 }

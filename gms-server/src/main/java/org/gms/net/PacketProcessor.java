@@ -316,11 +316,7 @@ public final class PacketProcessor {
         registerHandler(RecvOpcode.USE_ITEMUI, new RaiseIncExpHandler());
         registerHandler(RecvOpcode.CHANGE_QUICKSLOT, new QuickslotKeyMappedModifiedHandler());
         registerHandler(RecvOpcode.SET_HPMPALERT, new SetHpMpAlertHandler());
-        registerHandler(RecvOpcode.IDLE_STAGE_ENTER, new IdleStageEnterHandler());
-        registerHandler(RecvOpcode.IDLE_STAGE_STATE, new IdleStageStateHandler());
         registerHandler(RecvOpcode.IDLE_STAGE_CLAIM, new IdleStageClaimHandler());
-        registerHandler(RecvOpcode.IDLE_STAGE_EXIT, new IdleStageExitHandler());
         registerHandler(RecvOpcode.IDLE_EXPLORE_SELECT, new IdleExploreMapSelectHandler());
-        registerHandler(RecvOpcode.IDLE_EXPLORE_STATE, new IdleExploreMapStateHandler());
     }
 }

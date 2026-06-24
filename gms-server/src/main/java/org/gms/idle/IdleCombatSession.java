@@ -21,86 +21,53 @@ import java.util.Map;
 public final class IdleCombatSession {
     private static final String REWARD_OWNER = "";
 
-    private final int characterId;
     private IdleStageConfig stage;
-    private long lastTickMillis;
-    private int totalKills;
+    private long lastClaimMillis;
     private int lastGainedExp;
     private int lastGainedMeso;
     private int lastKills;
-    private int lastDamage;
-    private int lastMonsterId;
-    private double carriedDamage;
-    private final Map<Integer, Integer> lastGainedRewards = new LinkedHashMap<>();
 
-    public IdleCombatSession(int characterId, IdleStageConfig stage, long nowMillis) {
-        this.characterId = characterId;
+    public IdleCombatSession(IdleStageConfig stage) {
         this.stage = stage;
-        this.lastTickMillis = nowMillis;
     }
 
-    public synchronized IdleCombatSnapshot tick(Character chr, IdleCombatCalculator calculator, long nowMillis) {
-        long elapsedMillis = Math.max(0L, nowMillis - lastTickMillis);
-        IdleCombatResult result = calculator.calculate(chr, stage, elapsedMillis, carriedDamage);
+    public synchronized IdleCombatSnapshot claim(Character chr, long nowMillis) {
+        if (lastClaimMillis > 0L && nowMillis - lastClaimMillis < IdleCombatSettings.MIN_BATTLE_COMPLETE_REWARD_INTERVAL_MILLIS) {
+            lastClaimMillis = nowMillis;
+            lastGainedExp = 0;
+            lastGainedMeso = 0;
+            lastKills = 0;
+            return snapshot();
+        }
+
+        lastClaimMillis = nowMillis;
+        int kills = Randomizer.rand(IdleCombatSettings.MIN_BATTLE_COMPLETE_KILLS, IdleCombatSettings.MAX_BATTLE_COMPLETE_KILLS);
+
         lastGainedExp = 0;
         lastGainedMeso = 0;
-        lastKills = result.getKills();
-        lastDamage = result.getEstimatedDamagePerAttack();
-        lastMonsterId = result.getMonsterId();
-        lastGainedRewards.clear();
-        if (result.getKills() > 0) {
-            rollMonsterDrops(chr, result.getKills());
-            totalKills = safeAdd(totalKills, result.getKills());
-            if (lastGainedExp > 0) {
-                chr.gainExp(lastGainedExp, true, true);
-            }
-            if (lastGainedMeso > 0) {
-                chr.gainMeso(lastGainedMeso, true, true, false);
-            }
+        lastKills = kills;
+
+        rollMonsterDrops(chr, kills);
+        if (lastGainedExp > 0) {
+            chr.gainExp(lastGainedExp, true, true);
         }
-        carriedDamage = result.getRemainingDamage();
-        if (elapsedMillis >= stage.getKillIntervalMillis()) {
-            lastTickMillis = nowMillis;
+        if (lastGainedMeso > 0) {
+            chr.gainMeso(lastGainedMeso, true, true, false);
         }
-        return snapshot(result.getElapsedSeconds(), calculator.calculatePower(chr));
+
+        return snapshot();
     }
 
-    public synchronized IdleCombatSnapshot claim(Character chr, IdleCombatCalculator calculator, long nowMillis) {
-        return tick(chr, calculator, nowMillis);
-    }
-
-    public synchronized void changeStage(IdleStageConfig nextStage, long nowMillis) {
+    public synchronized void changeStage(IdleStageConfig nextStage) {
         this.stage = nextStage;
-        this.lastTickMillis = nowMillis;
-        this.totalKills = 0;
         this.lastGainedExp = 0;
         this.lastGainedMeso = 0;
         this.lastKills = 0;
-        this.lastDamage = 0;
-        this.lastMonsterId = 0;
-        this.carriedDamage = 0.0D;
-        this.lastGainedRewards.clear();
+        this.lastClaimMillis = 0L;
     }
 
-    private IdleCombatSnapshot snapshot(int elapsedSeconds, int playerPower) {
-        return new IdleCombatSnapshot(
-                characterId,
-                stage.getStageId(),
-                stage.getName(),
-                elapsedSeconds,
-                totalKills,
-                lastGainedExp,
-                lastGainedMeso,
-                stage.getMapId(),
-                stage.getMonsterIds(),
-                snapshotRewards(),
-                playerPower,
-                stage.getRecommendedPower(),
-                lastKills,
-                lastDamage,
-                lastMonsterId,
-                stage.getKillIntervalMillis()
-        );
+    private IdleCombatSnapshot snapshot() {
+        return new IdleCombatSnapshot(lastGainedExp, lastGainedMeso, lastKills);
     }
 
     private int safeAdd(int left, int right) {
@@ -141,9 +108,6 @@ public final class IdleCombatSession {
         if (!rolledRewards.isEmpty()) {
             validateRewardSpace(chr, rolledRewards);
             grantItems(chr, rolledRewards);
-            for (Map.Entry<Integer, Integer> reward : rolledRewards.entrySet()) {
-                addReward(lastGainedRewards, reward.getKey(), reward.getValue());
-            }
         }
     }
 
@@ -224,14 +188,6 @@ public final class IdleCombatSession {
             return;
         }
         rewards.merge(itemId, quantity, this::safeAdd);
-    }
-
-    private List<IdleRewardItem> snapshotRewards() {
-        List<IdleRewardItem> rewards = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> reward : lastGainedRewards.entrySet()) {
-            rewards.add(new IdleRewardItem(reward.getKey(), reward.getValue()));
-        }
-        return rewards;
     }
 
     private void validateRewardSpace(Character chr, Map<Integer, Integer> rewards) {

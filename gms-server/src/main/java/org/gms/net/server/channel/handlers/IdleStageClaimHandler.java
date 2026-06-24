@@ -18,9 +18,9 @@ public class IdleStageClaimHandler extends AbstractPacketHandler {
 
         try {
             IdleCombatSnapshot snapshot = IdleCombatService.getInstance().claim(chr);
-            c.sendPacket(PacketCreator.idleStageResult(IdleCombatService.ACTION_CLAIM, true, snapshot, "已領取放置獎勵"));
+            c.sendPacket(PacketCreator.idleStageResult(snapshot));
         } catch (RuntimeException ex) {
-            c.sendPacket(PacketCreator.idleStageError(IdleCombatService.ACTION_CLAIM, ex.getMessage()));
+            c.sendPacket(PacketCreator.idleStageError(ex.getMessage()));
         }
     }
 }

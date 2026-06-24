@@ -59,7 +59,6 @@ import org.gms.constants.id.NpcId;
 import org.gms.constants.inventory.ItemConstants;
 import org.gms.idle.IdleCombatSnapshot;
 import org.gms.idle.IdleExploreMapState;
-import org.gms.idle.IdleRewardItem;
 import org.gms.constants.skills.Buccaneer;
 import org.gms.constants.skills.Corsair;
 import org.gms.constants.skills.ThunderBreaker;
@@ -7534,38 +7533,16 @@ public class PacketCreator {
         return p;
     }
 
-    public static Packet idleStageResult(byte action, boolean success, IdleCombatSnapshot snapshot, String message) {
+    public static Packet idleStageResult(IdleCombatSnapshot snapshot) {
         OutPacket p = OutPacket.create(SendOpcode.IDLE_STAGE_RESULT);
-        p.writeByte(action);
-        p.writeBool(success);
-        p.writeInt(snapshot.getStageId());
-        p.writeInt(snapshot.getElapsedSeconds());
-        p.writeInt(snapshot.getTotalKills());
         p.writeInt(snapshot.getGainedExp());
         p.writeInt(snapshot.getGainedMeso());
-        p.writeInt(snapshot.getMapId());
-        p.writeInt(snapshot.getMonsterIds().size());
-        for (Integer monsterId : snapshot.getMonsterIds()) {
-            p.writeInt(monsterId);
-        }
-        p.writeInt(snapshot.getPendingRewards().size());
-        for (IdleRewardItem reward : snapshot.getPendingRewards()) {
-            p.writeInt(reward.getItemId());
-            p.writeInt(reward.getQuantity());
-        }
-        p.writeInt(snapshot.getPlayerPower());
-        p.writeInt(snapshot.getRecommendedPower());
         p.writeInt(snapshot.getLastKills());
-        p.writeInt(snapshot.getLastDamage());
-        p.writeInt(snapshot.getLastMonsterId());
-        p.writeInt(snapshot.getAttackIntervalMillis());
-        p.writeString(message + "：" + snapshot.getStageName());
         return p;
     }
 
-    public static Packet idleStageError(byte action, String message) {
+    public static Packet idleStageError(String message) {
         OutPacket p = OutPacket.create(SendOpcode.IDLE_STAGE_ERROR);
-        p.writeByte(action);
         p.writeString(message == null ? "放置系統發生未知錯誤" : message);
         return p;
     }

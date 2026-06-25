@@ -39,6 +39,9 @@ import org.gms.client.inventory.Pet;
 import org.gms.client.keybind.KeyBinding;
 import org.gms.config.GameConfig;
 import org.gms.constants.game.GameConstants;
+import org.gms.idle.IdleCombatService;
+import org.gms.idle.IdleExploreMapService;
+import org.gms.idle.IdleExploreMapState;
 import org.gms.manager.ServerManager;
 import org.gms.net.AbstractPacketHandler;
 import org.gms.net.packet.InPacket;
@@ -249,6 +252,7 @@ public final class PlayerLoggedinHandler extends AbstractPacketHandler {
             }
 
             c.sendPacket(PacketCreator.getCharInfo(player));    //这里发送登录成功封包
+            sendSavedIdleExploreMap(player);
             if (player.isHidden()) {
                 if (!GameConfig.getServerBoolean("use_auto_hide_gm")) {
                     player.toggleHide(true);
@@ -498,6 +502,21 @@ public final class PlayerLoggedinHandler extends AbstractPacketHandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendSavedIdleExploreMap(Character player) {
+        try {
+            Optional<IdleExploreMapState> stateOptional = IdleExploreMapService.getInstance().loadSavedMap(player);
+            if (stateOptional.isEmpty()) {
+                return;
+            }
+
+            IdleExploreMapState state = stateOptional.get();
+            IdleCombatService.getInstance().enterExploreMap(player, state);
+            player.sendPacket(PacketCreator.idleExploreResult(IdleExploreMapService.ACTION_SELECT, true, state, "已載入最後探索地圖"));
+        } catch (RuntimeException ex) {
+            log.warn("Failed to load saved idle explore map for character {}", player.getId(), ex);
         }
     }
 

@@ -6,9 +6,12 @@ import org.gms.util.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class IdleExploreMapService {
     public static final byte ACTION_SELECT = 1;
@@ -26,6 +29,30 @@ public final class IdleExploreMapService {
         IdleExploreMapState state = createState(mapId, System.currentTimeMillis(), System.currentTimeMillis());
         save(chr.getId(), mapId);
         return state;
+    }
+
+    public Optional<IdleExploreMapState> loadSavedMap(Character chr) {
+        if (chr == null) {
+            return Optional.empty();
+        }
+
+        String sql = "SELECT explore_map_id, started_at, updated_at FROM idle_exploration_state WHERE characterid = ?";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, chr.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return Optional.empty();
+                }
+
+                int mapId = rs.getInt("explore_map_id");
+                long startedAtMillis = toMillis(rs.getTimestamp("started_at"));
+                long updatedAtMillis = toMillis(rs.getTimestamp("updated_at"));
+                return Optional.of(createState(mapId, startedAtMillis, updatedAtMillis));
+            }
+        } catch (SQLException ex) {
+            throw new IllegalStateException("載入最後探索地圖失敗", ex);
+        }
     }
 
     private IdleExploreMapState createState(int mapId, long startedAtMillis, long updatedAtMillis) {
@@ -59,5 +86,9 @@ public final class IdleExploreMapService {
         } catch (SQLException ex) {
             throw new IllegalStateException("保存探索地圖失敗", ex);
         }
+    }
+
+    private static long toMillis(Timestamp timestamp) {
+        return timestamp != null ? timestamp.getTime() : System.currentTimeMillis();
     }
 }

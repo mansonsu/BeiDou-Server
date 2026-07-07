@@ -209,6 +209,7 @@ public enum RecvOpcode implements Opcode {
 
     IDLE_STAGE_CLAIM(0x5002), // 放置版：領取目前累積獎勵
     IDLE_EXPLORE_SELECT(0x5004), // Unity idle: select exploration map
+    JOB_ADVANCE_REQUEST(0x5006), // Unity idle: request direct job advancement
     ;
 
     private int code = -2;

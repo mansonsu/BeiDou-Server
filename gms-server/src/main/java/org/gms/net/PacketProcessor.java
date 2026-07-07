@@ -318,5 +318,6 @@ public final class PacketProcessor {
         registerHandler(RecvOpcode.SET_HPMPALERT, new SetHpMpAlertHandler());
         registerHandler(RecvOpcode.IDLE_STAGE_CLAIM, new IdleStageClaimHandler());
         registerHandler(RecvOpcode.IDLE_EXPLORE_SELECT, new IdleExploreMapSelectHandler());
+        registerHandler(RecvOpcode.JOB_ADVANCE_REQUEST, new JobAdvanceRequestHandler());
     }
 }

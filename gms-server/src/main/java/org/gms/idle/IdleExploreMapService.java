@@ -26,6 +26,7 @@ public final class IdleExploreMapService {
     }
 
     public IdleExploreMapState selectMap(Character chr, int mapId) {
+        validateEnabledMap(mapId);
         IdleExploreMapState state = createState(mapId, System.currentTimeMillis(), System.currentTimeMillis());
         save(chr.getId(), mapId);
         return state;
@@ -46,6 +47,10 @@ public final class IdleExploreMapService {
                 }
 
                 int mapId = rs.getInt("explore_map_id");
+                if (!IdleExploreMapWhitelist.isEnabled(mapId)) {
+                    return Optional.empty();
+                }
+
                 long startedAtMillis = toMillis(rs.getTimestamp("started_at"));
                 long updatedAtMillis = toMillis(rs.getTimestamp("updated_at"));
                 return Optional.of(createState(mapId, startedAtMillis, updatedAtMillis));
@@ -56,10 +61,17 @@ public final class IdleExploreMapService {
     }
 
     private IdleExploreMapState createState(int mapId, long startedAtMillis, long updatedAtMillis) {
+        validateEnabledMap(mapId);
         List<Integer> monsterIds = loadMonsterIds(mapId);
         String streetName = MapFactory.loadStreetName(mapId);
         String mapName = MapFactory.loadPlaceName(mapId);
         return new IdleExploreMapState(mapId, streetName, mapName, monsterIds, startedAtMillis, updatedAtMillis);
+    }
+
+    private void validateEnabledMap(int mapId) {
+        if (!IdleExploreMapWhitelist.isEnabled(mapId)) {
+            throw new IllegalArgumentException("探索地圖尚未開放: " + mapId);
+        }
     }
 
     private List<Integer> loadMonsterIds(int mapId) {

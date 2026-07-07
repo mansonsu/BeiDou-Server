@@ -4,6 +4,19 @@ set -eu
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 cd "$ROOT"
 
+JAVA_HOME="$ROOT/jdk-21.0.2"
+if [ ! -x "$JAVA_HOME/bin/java" ]; then
+  echo "JDK 21 not found or not executable: $JAVA_HOME" >&2
+  exit 1
+fi
+if [ ! -x "$JAVA_HOME/bin/javac" ]; then
+  echo "Full JDK 21 is required for packaging: $JAVA_HOME" >&2
+  echo "This folder looks like a JRE. Replace it with a JDK 21 build that includes javac." >&2
+  exit 1
+fi
+export JAVA_HOME
+export PATH="$JAVA_HOME/bin:$PATH"
+
 MIGRATION_DIR="$ROOT/gms-server/src/main/resources/db/migration"
 TMP_MIGRATIONS="$(mktemp)"
 trap 'rm -f "$TMP_MIGRATIONS"' EXIT

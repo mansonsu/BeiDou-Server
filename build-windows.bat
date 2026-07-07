@@ -1,16 +1,18 @@
 @echo off
 setlocal
+chcp 65001
 
 set "ROOT=%~dp0"
 set "JAVA_HOME=%ROOT%jdk-21.0.2"
 set "MAVEN=%ProgramFiles%\JetBrains\IntelliJ IDEA Community Edition 2025.2\plugins\maven\lib\maven3\bin\mvn.cmd"
 set "STATIC_DIR=%ROOT%gms-server\src\main\resources\static"
 
+:menu
 echo.
 echo ==============================
 echo BeiDou Windows Build
 echo ==============================
-echo 1. build 遊戲邏輯
+echo 1. Build 遊戲邏輯
 echo 2. Build 網頁後台
 echo 3. Build 遊戲邏輯 + 網頁後台
 echo 4. 關閉
@@ -19,22 +21,37 @@ set /p "BUILD_CHOICE=Select [1-4]: "
 
 if "%BUILD_CHOICE%"=="1" (
   call :build_game
-  if errorlevel 1 goto :fail
-  goto :success
+  if errorlevel 1 (
+    call :action_failed
+  ) else (
+    call :action_success
+  )
+  goto :menu
 )
 
 if "%BUILD_CHOICE%"=="2" (
   call :build_web
-  if errorlevel 1 goto :fail
-  goto :success
+  if errorlevel 1 (
+    call :action_failed
+  ) else (
+    call :action_success
+  )
+  goto :menu
 )
 
 if "%BUILD_CHOICE%"=="3" (
   call :build_web
-  if errorlevel 1 goto :fail
+  if errorlevel 1 (
+    call :action_failed
+    goto :menu
+  )
   call :build_game
-  if errorlevel 1 goto :fail
-  goto :success
+  if errorlevel 1 (
+    call :action_failed
+  ) else (
+    call :action_success
+  )
+  goto :menu
 )
 
 if "%BUILD_CHOICE%"=="4" (
@@ -43,7 +60,8 @@ if "%BUILD_CHOICE%"=="4" (
 )
 
 echo Invalid option: %BUILD_CHOICE%
-goto :fail
+call :action_failed
+goto :menu
 
 :build_web
 echo.
@@ -115,14 +133,14 @@ if not exist "%MAVEN%" (
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 exit /b 0
 
-:success
+:action_success
 echo.
 echo build-windows.bat completed.
 pause
 exit /b 0
 
-:fail
+:action_failed
 echo.
 echo build-windows.bat failed.
 pause
-exit /b 1
+exit /b 0

@@ -22,6 +22,7 @@
 package org.gms.net.opcodes;
 
 public enum RecvOpcode implements Opcode {
+    EXTERNAL_TOKEN_LOGIN(0x5008),
     CUSTOM_PACKET(0x3713),//13 37 lol // 自定义封包
 
     LOGIN_PASSWORD(0x01), // 登录密码

@@ -39,6 +39,7 @@ import org.gms.net.server.handlers.login.CreateCharHandler;
 import org.gms.net.server.handlers.login.DeleteCharHandler;
 import org.gms.net.server.handlers.login.GuestLoginHandler;
 import org.gms.net.server.handlers.login.LoginPasswordHandler;
+import org.gms.net.server.handlers.login.ExternalTokenLoginHandler;
 import org.gms.net.server.handlers.login.RegisterPicHandler;
 import org.gms.net.server.handlers.login.RegisterPinHandler;
 import org.gms.net.server.handlers.login.RelogRequestHandler;
@@ -148,6 +149,7 @@ public final class PacketProcessor {
         registerHandler(RecvOpcode.CHARLIST_REQUEST, new CharlistRequestHandler());
         registerHandler(RecvOpcode.CHAR_SELECT, new CharSelectedHandler());
         registerHandler(RecvOpcode.LOGIN_PASSWORD, new LoginPasswordHandler());
+        registerHandler(RecvOpcode.EXTERNAL_TOKEN_LOGIN, new ExternalTokenLoginHandler());
         registerHandler(RecvOpcode.RELOG, new RelogRequestHandler());
         registerHandler(RecvOpcode.SERVERLIST_REQUEST, new ServerlistRequestHandler());
         registerHandler(RecvOpcode.SERVERSTATUS_REQUEST, new ServerStatusRequestHandler());

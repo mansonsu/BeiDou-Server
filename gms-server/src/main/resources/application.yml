@@ -65,3 +65,8 @@ gms:
     localhost: 127.0.0.1
     # 客户端登录端口
     login-port: 8484
+auth:
+  steam:
+    app-id: ${STEAM_APP_ID:0}
+    publisher-key: ${STEAM_PUBLISHER_KEY:}
+    identity: ${STEAM_AUTH_IDENTITY:beidou-login}

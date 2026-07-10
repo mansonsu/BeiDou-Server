@@ -650,6 +650,21 @@ public class Client extends ChannelInboundHandlerAdapter {
         return false;
     }
 
+    public int loginExternal(int accountId, Hwid hwid) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT id,name,gender,banned,pin,pic,characterslots,language FROM accounts WHERE id=?")) {
+            ps.setInt(1, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next() || rs.getByte("banned") == 1) return 3;
+                accId=rs.getInt("id"); accountName=rs.getString("name"); pin=rs.getString("pin"); pic=rs.getString("pic");
+                gender=rs.getByte("gender"); characterSlots=rs.getByte("characterslots"); lang=rs.getInt("language"); gmlevel=0;
+            }
+            if (getLoginState() > LOGIN_NOTLOGGEDIN) return 7;
+            AntiMulticlientResult result=SessionCoordinator.getInstance().attemptLoginSession(this,hwid,accId,false);
+            if (result != AntiMulticlientResult.SUCCESS) return result == AntiMulticlientResult.REMOTE_LOGGEDIN ? 17 : 8;
+            loginattempt=0; return 0;
+        } catch (SQLException e) { log.error("External login failed",e); return 8; }
+    }
+
     public int login(String login, String pwd, Hwid hwid) {
         int loginok = 5;
 

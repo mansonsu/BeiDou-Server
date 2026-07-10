@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gms.exception.BizException;
 import org.gms.service.AccountService;
+import org.gms.util.ClientIpResolver;
 import org.gms.util.RateLimitUtil;
 import org.gms.util.RequireUtil;
 import org.springframework.stereotype.Component;
@@ -42,9 +43,7 @@ public class ServerFilter extends HttpFilter {
         try {
             String forwardedIp = request.getHeader("X-Forwarded-For");
             String realIp = request.getHeader("X-Real-IP");
-            String remoteAddr = request.getRemoteAddr();
-            if (RequireUtil.isEmpty(remoteAddr)) remoteAddr = forwardedIp;
-            if (RequireUtil.isEmpty(remoteAddr)) remoteAddr = realIp;
+            String remoteAddr = ClientIpResolver.resolve(request);
             RequireUtil.requireNotEmpty(remoteAddr, "Unknown remote address");
 
             // 封禁ip禁止请求

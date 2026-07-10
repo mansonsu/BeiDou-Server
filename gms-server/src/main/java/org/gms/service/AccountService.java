@@ -9,6 +9,7 @@ import org.gms.client.DefaultDates;
 import org.gms.config.GameConfig;
 import org.gms.dao.entity.*;
 import org.gms.dao.mapper.*;
+import org.gms.exception.BizException;
 import org.gms.model.dto.AddAccountDTO;
 import org.gms.model.dto.UpdateAccountByGmDTO;
 import org.gms.model.dto.UpdateAccountByUserDTO;
@@ -36,6 +37,8 @@ import static org.gms.dao.entity.table.IpbansDOTableDef.IPBANS_D_O;
 @Service
 @AllArgsConstructor
 public class AccountService {
+    private static final int REGISTRATION_IP_LIMIT_CODE = 40023;
+
     private final AccountsMapper accountsMapper;
     private final CharactersMapper charactersMapper;
     private final IpbansMapper ipbansMapper;
@@ -80,10 +83,11 @@ public class AccountService {
         accountsMapper.update(condition);
     }
 
-    public void addAccount(AddAccountDTO submitData) throws NoSuchAlgorithmException {
+    public void addAccount(AddAccountDTO submitData, String registrationIp) throws NoSuchAlgorithmException {
         // 防止swagger调用，后续的语言路由都受影响
         RequireUtil.requireNotNull(submitData.getLanguage(), I18nUtil.getExceptionMessage("LANGUAGE_NOT_SUPPORT"));
         RequireUtil.requireNull(findByName(submitData.getName()), I18nUtil.getExceptionMessage("AccountService.addAccount.exception1"));
+        requireRegistrationIpAvailable(registrationIp);
         AccountsDO account = AccountsDO.builder()
                 .name(submitData.getName())
                 .password(encryptPassword(submitData.getPassword()))
@@ -91,9 +95,24 @@ public class AccountService {
                 .tempban(Timestamp.valueOf(DefaultDates.getTempban()))
                 .language(submitData.getLanguage())
                 .lastlogin(Timestamp.valueOf(DefaultDates.getTempban()))
+                .ip(registrationIp)
                 .build();
         // 可以直接用insertSelective忽略null值
         accountsMapper.insertSelective(account);
+    }
+
+    private void requireRegistrationIpAvailable(String registrationIp) {
+        int limit = GameConfig.getServerInt("registration_ip_account_limit");
+        if (limit <= 0 || RequireUtil.isEmpty(registrationIp)) {
+            return;
+        }
+        long registeredCount = accountsMapper.selectCountByQuery(new QueryWrapper().eq("ip", registrationIp));
+        if (registeredCount >= limit) {
+            throw new BizException(
+                    REGISTRATION_IP_LIMIT_CODE,
+                    I18nUtil.getExceptionMessage("AccountService.addAccount.ipLimit", limit)
+            );
+        }
     }
 
     public void updateAccountByUser(UpdateAccountByUserDTO submitData) throws NoSuchAlgorithmException {

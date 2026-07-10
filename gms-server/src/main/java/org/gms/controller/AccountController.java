@@ -3,11 +3,13 @@ package org.gms.controller;
 import com.mybatisflex.core.paginate.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.gms.constants.api.ApiConstant;
 import org.gms.dao.entity.AccountsDO;
 import org.gms.model.dto.*;
 import org.gms.service.AccountService;
 import org.gms.service.CharacterService;
+import org.gms.util.ClientIpResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,8 +52,8 @@ public class AccountController {
     @Tag(name = "/account/" + ApiConstant.LATEST)
     @Operation(summary = "注册账号")
     @PostMapping("/" + ApiConstant.LATEST)
-    public ResultBody<Object> register(@RequestBody SubmitBody<AddAccountDTO> submitBody) throws NoSuchAlgorithmException {
-        accountService.addAccount(submitBody.getData());
+    public ResultBody<Object> register(HttpServletRequest request, @RequestBody SubmitBody<AddAccountDTO> submitBody) throws NoSuchAlgorithmException {
+        accountService.addAccount(submitBody.getData(), ClientIpResolver.resolve(request));
         return ResultBody.success();
     }
 

@@ -26,22 +26,29 @@ public final class IdleCombatSession {
     private int lastGainedExp;
     private int lastGainedMeso;
     private int lastKills;
+    private int completedNormalStages;
 
     public IdleCombatSession(IdleStageConfig stage) {
         this.stage = stage;
     }
 
-    public synchronized IdleCombatSnapshot claim(Character chr, long nowMillis) {
+    public synchronized IdleCombatSnapshot claim(Character chr, long nowMillis, boolean isBossStage) {
+        validateStageProgress(isBossStage);
+
         if (lastClaimMillis > 0L && nowMillis - lastClaimMillis < IdleCombatSettings.MIN_BATTLE_COMPLETE_REWARD_INTERVAL_MILLIS) {
             lastClaimMillis = nowMillis;
             lastGainedExp = 0;
             lastGainedMeso = 0;
             lastKills = 0;
+            completeStageProgress(isBossStage);
             return snapshot();
         }
 
         lastClaimMillis = nowMillis;
         int kills = Randomizer.rand(IdleCombatSettings.MIN_BATTLE_COMPLETE_KILLS, IdleCombatSettings.MAX_BATTLE_COMPLETE_KILLS);
+        if (isBossStage) {
+            kills *= IdleCombatSettings.BOSS_REWARD_MULTIPLIER;
+        }
 
         lastGainedExp = 0;
         lastGainedMeso = 0;
@@ -55,7 +62,26 @@ public final class IdleCombatSession {
             chr.gainMeso(lastGainedMeso, true, true, false);
         }
 
+        completeStageProgress(isBossStage);
+
         return snapshot();
+    }
+
+    private void completeStageProgress(boolean isBossStage) {
+        if (isBossStage) {
+            completedNormalStages = 0;
+        } else {
+            completedNormalStages++;
+        }
+    }
+
+    private void validateStageProgress(boolean isBossStage) {
+        if (isBossStage && completedNormalStages != IdleCombatSettings.NORMAL_STAGES_BEFORE_BOSS) {
+            throw new IllegalStateException("Boss 關卡回報順序不合法");
+        }
+        if (!isBossStage && completedNormalStages >= IdleCombatSettings.NORMAL_STAGES_BEFORE_BOSS) {
+            throw new IllegalStateException("目前應回報 Boss 關卡");
+        }
     }
 
     public synchronized void changeStage(IdleStageConfig nextStage) {
@@ -64,6 +90,7 @@ public final class IdleCombatSession {
         this.lastGainedMeso = 0;
         this.lastKills = 0;
         this.lastClaimMillis = 0L;
+        this.completedNormalStages = 0;
     }
 
     private IdleCombatSnapshot snapshot() {

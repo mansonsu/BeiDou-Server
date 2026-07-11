@@ -17,7 +17,15 @@ public class IdleStageClaimHandler extends AbstractPacketHandler {
         }
 
         try {
-            IdleCombatSnapshot snapshot = IdleCombatService.getInstance().claim(chr);
+            if (p.available() != 1) {
+                throw new IllegalArgumentException("放置戰鬥封包格式不正確");
+            }
+            byte stageType = p.readByte();
+            if (stageType != 0 && stageType != 1) {
+                throw new IllegalArgumentException("放置戰鬥關卡類型不正確");
+            }
+            boolean isBossStage = stageType == 1;
+            IdleCombatSnapshot snapshot = IdleCombatService.getInstance().claim(chr, isBossStage);
             c.sendPacket(PacketCreator.idleStageResult(snapshot));
         } catch (RuntimeException ex) {
             c.sendPacket(PacketCreator.idleStageError(ex.getMessage()));

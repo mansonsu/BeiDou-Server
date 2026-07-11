@@ -35,9 +35,9 @@ public final class IdleCombatService {
         });
     }
 
-    public IdleCombatSnapshot claim(Character chr) {
+    public IdleCombatSnapshot claim(Character chr, boolean isBossStage) {
         IdleCombatSession session = requireSession(chr);
-        return session.claim(chr, System.currentTimeMillis());
+        return session.claim(chr, System.currentTimeMillis(), isBossStage);
     }
 
     private IdleCombatSession requireSession(Character chr) {
